@@ -1,0 +1,6 @@
+{
+  "name": "SMP Taman Harapan Bekasi Portal",
+  "description": "Portal Resmi SMP Taman Harapan Bekasi dengan slogan Bermata Hati, dilengkapi Portal ERP Internal OSIS untuk mengelola administrasi, artikel, galeri, kas, denda, seragam, dan staf pengajar.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
