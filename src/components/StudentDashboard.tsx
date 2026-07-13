@@ -876,12 +876,12 @@ export default function StudentDashboard({
             <button
               type="button"
               onClick={() => setIsMobileNavOpen((prev) => !prev)}
-              className="lg:hidden w-full flex items-center justify-between px-3 py-2.5 mb-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-extrabold text-white cursor-pointer"
+              className="lg:hidden w-full flex items-center justify-between px-3 py-3 mb-2 rounded-xl bg-slate-900 border border-slate-800 text-sm font-extrabold text-white cursor-pointer"
               id="mobile-erp-menu-toggle"
             >
               <span className="flex items-center space-x-2">
                 <LayoutDashboardIcon className="w-4 h-4 shrink-0 text-amber-400" />
-                <span>Menu ERP</span>
+                <span>-- PILIH MENU --</span>
               </span>
               {isMobileNavOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
@@ -890,13 +890,13 @@ export default function StudentDashboard({
               onClick={() => setIsMobileNavOpen(false)}
               className={`${isMobileNavOpen ? 'block' : 'hidden'} lg:block space-y-1.5`}
             >
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-3 block mb-2">MENU MODUL ERP</span>
+            <span className="text-xs lg:text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-3 block mb-2">MENU MODUL ERP</span>
 
             {/* Overview */}
             {!isGuruPiket && (
               <button
                 onClick={() => setDashboardTab('overview')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'overview'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -911,7 +911,7 @@ export default function StudentDashboard({
             {canAccessAttendance && (
               <button
                 onClick={() => setDashboardTab('piket')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'piket'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -926,7 +926,7 @@ export default function StudentDashboard({
             {canAccessAttendance && (
               <button
                 onClick={() => setDashboardTab('attendance-recap')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'attendance-recap'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -941,7 +941,7 @@ export default function StudentDashboard({
             {!isGuruPiket && (
               <button
                 onClick={() => { setDashboardTab('articles'); setFilterCategory('All'); setSearchQuery(''); }}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'articles'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -956,7 +956,7 @@ export default function StudentDashboard({
             {!isGuruPiket && (
               <button
                 onClick={() => setDashboardTab('gallery')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'gallery'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -971,7 +971,7 @@ export default function StudentDashboard({
             {!isGuruPiket && (
               <button
                 onClick={() => setDashboardTab('teachers')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'teachers'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -986,7 +986,7 @@ export default function StudentDashboard({
             {!isGuruPiket && (
               <button
                 onClick={() => setDashboardTab('uniforms')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'uniforms'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -1001,7 +1001,7 @@ export default function StudentDashboard({
             {canAccessFinance && (
               <button
                 onClick={() => { setDashboardTab('cash'); setSearchQuery(''); }}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'cash'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -1016,7 +1016,7 @@ export default function StudentDashboard({
             {canAccessFinance && (
               <button
                 onClick={() => { setDashboardTab('fines'); setSearchQuery(''); }}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'fines'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -1031,7 +1031,7 @@ export default function StudentDashboard({
             {!isGuruPiket && isManagerial && (
               <button
                 onClick={() => setDashboardTab('logs')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'logs'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -1046,7 +1046,7 @@ export default function StudentDashboard({
             {!isGuruPiket && isSuperAdmin && (
               <button
                 onClick={() => setDashboardTab('users')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'users'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
@@ -1061,7 +1061,7 @@ export default function StudentDashboard({
             {!isGuruPiket && isSuperAdmin && (
               <button
                 onClick={() => setDashboardTab('settings')}
-                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
                   dashboardTab === 'settings'
                     ? 'bg-amber-400 text-slate-900 shadow'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white'
