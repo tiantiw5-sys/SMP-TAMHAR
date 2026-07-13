@@ -9,7 +9,8 @@ import {
   Settings, Key, Trash2, Plus, Edit3, Download, LogOut, 
   AlertTriangle, Calendar, CheckCircle2, TrendingUp, TrendingDown,
   Sparkles, Filter, X, ArrowUpRight, Search, Menu, Eye, EyeOff,
-  Globe, MapPin, Activity, Wifi, Clock
+  Globe, MapPin, Activity, Wifi, Clock,
+  LayoutDashboard as LayoutDashboardIcon, ChevronUp, ChevronDown
 } from 'lucide-react';
 import { 
   Article, GalleryItem, Teacher, Uniform, CashTransaction, 
@@ -63,6 +64,11 @@ export default function StudentDashboard({
   const [dashboardTab, setDashboardTab] = useState<
     'overview' | 'articles' | 'gallery' | 'teachers' | 'uniforms' | 'cash' | 'fines' | 'users' | 'logs' | 'settings'
   >('overview');
+
+  // Menu ERP di mobile default collapsed — sebelumnya daftar menu (10+ tombol)
+  // selalu terbuka penuh dan menutupi seluruh layar di atas konten, jadi
+  // user harus scroll panjang dulu sebelum lihat isi tab yang aktif.
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Search and Filter states
   const [filterCategory, setFilterCategory] = useState('All');
@@ -863,9 +869,29 @@ export default function StudentDashboard({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left Panel Sidebar Navigation */}
-          <div className="lg:col-span-3 bg-[#0b1d33] border border-slate-800 rounded-2xl p-4 shadow-sm space-y-1.5">
+          <div className="lg:col-span-3 bg-[#0b1d33] border border-slate-800 rounded-2xl p-4 shadow-sm">
+            {/* Toggle menu ERP — mobile-only. Daftar menu (20+ tombol) tadinya
+                selalu terbuka penuh dan menutupi layar di atas konten, jadi
+                default-nya sekarang collapsed di HP; desktop tidak berubah. */}
+            <button
+              type="button"
+              onClick={() => setIsMobileNavOpen((prev) => !prev)}
+              className="lg:hidden w-full flex items-center justify-between px-3 py-2.5 mb-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-extrabold text-white cursor-pointer"
+              id="mobile-erp-menu-toggle"
+            >
+              <span className="flex items-center space-x-2">
+                <LayoutDashboardIcon className="w-4 h-4 shrink-0 text-amber-400" />
+                <span>Menu ERP</span>
+              </span>
+              {isMobileNavOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            <div
+              onClick={() => setIsMobileNavOpen(false)}
+              className={`${isMobileNavOpen ? 'block' : 'hidden'} lg:block space-y-1.5`}
+            >
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-3 block mb-2">MENU MODUL ERP</span>
-            
+
             {/* Overview */}
             {!isGuruPiket && (
               <button
@@ -1054,6 +1080,7 @@ export default function StudentDashboard({
                 <LogOut className="w-4 h-4 shrink-0" />
                 <span>Keluar ERP</span>
               </button>
+            </div>
             </div>
           </div>
 
