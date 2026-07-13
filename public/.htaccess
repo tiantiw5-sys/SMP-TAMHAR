@@ -1,0 +1,44 @@
+# Portal SMP Taman Harapan Bekasi — konfigurasi untuk hosting cPanel (Jagoan Hosting dkk)
+# Taruh file ini di folder yang sama dengan index.html (biasanya public_html/)
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Paksa HTTPS (aktifkan setelah SSL di cPanel sudah nyala)
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # SPA fallback — semua alamat yang bukan file/folder asli dilayani oleh
+  # index.html yang sama (portal ini satu halaman, navigasinya pakai #hash).
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set X-Frame-Options "DENY"
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# Cache aset yang sudah di-hash Vite (index-XXXXXXXX.js/css) selamanya
+<IfModule mod_expires.c>
+  ExpiresActive On
+  <FilesMatch "\.(js|css|png|jpg|jpeg|svg|woff2)$">
+    ExpiresDefault "access plus 1 year"
+  </FilesMatch>
+  <FilesMatch "^(sw\.js|manifest\.webmanifest)$">
+    ExpiresDefault "access plus 0 seconds"
+  </FilesMatch>
+</IfModule>
+
+# Header Cache-Control eksplisit untuk sw.js/manifest — Expires (mod_expires)
+# saja tidak cukup untuk mencegah Cloudflare nge-cache di edge selama
+# beberapa hari; browser & Cloudflare lebih patuh ke Cache-Control.
+<IfModule mod_headers.c>
+  <FilesMatch "^(sw\.js|manifest\.webmanifest)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+  </FilesMatch>
+</IfModule>
