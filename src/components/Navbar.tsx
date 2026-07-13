@@ -4,9 +4,11 @@
  */
 
 import React, { useState } from 'react';
-import { Menu, X, Bell, LogOut, LayoutDashboard, Compass } from 'lucide-react';
+import { Menu, X, Bell, LogOut, LayoutDashboard, Compass, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import SchoolLogo from './SchoolLogo';
+import { NAV_ITEMS, CONTACT_WHATSAPP_INTL } from '../constants';
+import { formatWhatsAppUrl } from '../auth';
 
 interface NavbarProps {
   isLoggedIn: boolean;
@@ -31,14 +33,7 @@ export default function Navbar({
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navItems = [
-    { id: 'home', label: 'Beranda' },
-    { id: 'courses', label: 'Berita & Artikel' },
-    { id: 'features', label: 'Keunggulan' },
-    { id: 'uniforms', label: 'Seragam' },
-    { id: 'pricing', label: 'PPDB 2026/2027' },
-    { id: 'about', label: 'Visi Misi & Guru' }
-  ];
+  const navItems = NAV_ITEMS;
 
   const handleNavClick = (id: string) => {
     setActiveTab(id);
@@ -164,26 +159,38 @@ export default function Navbar({
                 >
                   Portal Login
                 </button>
-                <button
-                  onClick={onLogin}
-                  className="bg-amber-400 text-slate-900 px-2.5 py-1.5 lg:px-3 lg:py-2 xl:px-4 xl:py-2.5 rounded-lg xl:rounded-xl text-[10px] xl:text-xs 2xl:text-sm font-bold hover:bg-amber-300 transition-all duration-300 ease-out hover:scale-110 active:scale-95 shadow-md shadow-amber-400/20 cursor-pointer whitespace-nowrap"
+                <a
+                  href={formatWhatsAppUrl(CONTACT_WHATSAPP_INTL)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-amber-400 text-slate-900 px-2.5 py-1.5 lg:px-3 lg:py-2 xl:px-4 xl:py-2.5 rounded-lg xl:rounded-xl text-[10px] xl:text-xs 2xl:text-sm font-bold hover:bg-amber-300 transition-all duration-300 ease-out hover:scale-110 active:scale-95 shadow-md shadow-amber-400/20 cursor-pointer whitespace-nowrap inline-block text-center"
                   id="signup-btn"
                 >
                   PPDB Online
-                </button>
+                </a>
               </div>
             )}
           </div>
 
           {/* Mobile menu button */}
           <div className="lg:hidden flex items-center space-x-3">
-            {isLoggedIn && (
-              <button 
+            {isLoggedIn ? (
+              <button
                 onClick={onDashboardToggle}
                 className="p-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-amber-400 shadow-inner"
                 title="Portal Login"
               >
                 <LayoutDashboard className="w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                onClick={onLogin}
+                className="flex items-center space-x-1.5 px-3 py-2 bg-amber-400 hover:bg-amber-300 rounded-xl text-slate-950 font-bold text-xs shadow-md"
+                title="Portal Login"
+                id="mobile-login-btn"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Login</span>
               </button>
             )}
             <button
@@ -270,15 +277,15 @@ export default function Navbar({
                     >
                       Portal Login
                     </button>
-                    <button
-                      onClick={() => {
-                        onLogin();
-                        setIsMobileMenuOpen(false);
-                      }}
-                      className="w-full text-center py-2.5 rounded-xl text-sm font-semibold bg-amber-400 text-slate-900 hover:bg-amber-300"
+                    <a
+                      href={formatWhatsAppUrl(CONTACT_WHATSAPP_INTL)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="w-full text-center py-2.5 rounded-xl text-sm font-semibold bg-amber-400 text-slate-900 hover:bg-amber-300 inline-block"
                     >
                       PPDB Online
-                    </button>
+                    </a>
                   </div>
                 )}
               </div>
