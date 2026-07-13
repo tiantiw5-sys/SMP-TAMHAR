@@ -9,17 +9,12 @@
     "generate:pwa-icons": "node scripts/generate-pwa-icons.mjs",
     "build": "npm run generate:pwa-icons && vite build",
     "pack:deploy": "powershell -ExecutionPolicy Bypass -File scripts/create-deploy-zip.ps1",
-    "ios:sync": "npm run build && npx cap sync ios",
-    "ios:open": "npx cap open ios",
     "setup:supabase": "node scripts/setup-supabase-schema.mjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@capacitor/cli": "^8.4.1",
-    "@capacitor/core": "^8.4.1",
-    "@capacitor/ios": "^8.4.1",
     "@supabase/supabase-js": "^2.110.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
