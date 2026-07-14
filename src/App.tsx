@@ -29,7 +29,7 @@ import GallerySlideshow from './components/GallerySlideshow';
 import { SchoolOrgChartFull, OsisOrgChartFull } from './components/OrgStructureCharts';
 import { SEJARAH_IMAGE_URL, PPDB_FLOW_IMAGE_URL, PPDB_FORM_URL } from './orgStructure';
 import CourseCard from './components/CourseCard';
-import IndependenceDayBanner from './components/IndependenceDayBanner';
+import IndependenceDaySection from './components/IndependenceDaySection';
 // Code-split lewat React.lazy — komponen ADMIN/berat ini cuma dipakai staf
 // yang sudah login (atau lewat link khusus), jadi TIDAK perlu ikut ke-download
 // oleh pengunjung publik landing page (mengurangi ukuran bundle awal &
@@ -1154,10 +1154,6 @@ export default function App() {
             transition={{ duration: 0.3 }}
             className="bg-[#071324]"
           >
-            {/* Banner musiman HUT Kemerdekaan RI — otomatis tampil sepanjang
-                Agustus, landing page saja (lihat IndependenceDayBanner.tsx). */}
-            <IndependenceDayBanner />
-
             {/* Hero Banner with overlap indicators */}
             <Hero
               onExploreCourses={() => {
@@ -1172,6 +1168,10 @@ export default function App() {
                 handleLoginClick();
               }}
             />
+
+            {/* Section musiman HUT Kemerdekaan RI — otomatis tampil sepanjang
+                Agustus, landing page saja (lihat IndependenceDaySection.tsx). */}
+            <IndependenceDaySection />
 
             {/* Gallery Carousel/Slideshow */}
             <GallerySlideshow items={gallery} />
