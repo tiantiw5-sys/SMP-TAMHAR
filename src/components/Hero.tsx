@@ -13,6 +13,7 @@ import {
   PPDB_FORM_URL,
   DIGITAL_MPLS_URL,
 } from '../orgStructure';
+import { independenceAnniversary, isIndependenceMonth } from '../lib/seasonalTheme';
 
 interface HeroProps {
   onExploreCourses: () => void;
@@ -30,8 +31,18 @@ function AndroidLogo({ className }: { className?: string }) {
 
 export default function Hero({ onHowItWorks }: HeroProps) {
 
+  const showIndependenceOrnaments = isIndependenceMonth();
+
   return (
     <section id="home" className="relative bg-[#071324] text-white pt-12 pb-24 overflow-hidden">
+      {/* Ornamen bunting merah-putih — cuma tampil sepanjang Agustus (lihat
+          lib/seasonalTheme.ts), otomatis lewat tiap tahun tanpa perlu diubah. */}
+      {showIndependenceOrnaments && (
+        <div
+          className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-red-600 via-white to-red-600 z-20"
+          aria-hidden="true"
+        />
+      )}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <video
           autoPlay
@@ -201,6 +212,14 @@ export default function Hero({ onHowItWorks }: HeroProps) {
                 referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+              {showIndependenceOrnaments && (
+                <div className="absolute top-4 left-4 bg-red-700/95 backdrop-blur-md border border-red-500/60 rounded-2xl px-3.5 py-2 shadow-xl flex items-center gap-2">
+                  <span className="text-base shrink-0" aria-hidden="true">🇮🇩</span>
+                  <span className="text-[10px] font-black uppercase tracking-wide leading-tight">
+                    Dirgahayu RI<br />ke-{independenceAnniversary()}
+                  </span>
+                </div>
+              )}
               <div className="absolute top-4 right-4 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-2xl p-4 shadow-xl w-52 text-left">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest">KUOTA PPDB TERISI</span>
