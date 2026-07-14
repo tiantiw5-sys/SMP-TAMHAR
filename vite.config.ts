@@ -54,6 +54,23 @@ export default defineConfig(({ mode }) => {
         },
         workbox: {
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          // Chunk hasil React.lazy (lihat App.tsx) untuk komponen
+          // admin/staf/parent yang cuma dipakai SETELAH login (Dashboard ERP,
+          // AnnotationMode, Portal Orang Tua, cetak kartu barcode) sengaja
+          // TIDAK ikut precache — kalau ikut, Service Worker tetap akan
+          // background-download semua chunk itu untuk SEMUA pengunjung
+          // (termasuk yang belum login/publik) begitu SW ke-install, yang
+          // meniadakan penghematan egress dari code-splitting itu sendiri.
+          // Chunk-chunk ini tetap kepakai normal via HTTP cache biasa begitu
+          // benar-benar dibuka (nama file sudah content-hashed).
+          globIgnores: [
+            '**/StudentDashboard-*.js',
+            '**/AnnotationMode-*.js',
+            '**/ParentDashboard-*.js',
+            '**/StudentBarcodeCards-*.js',
+            '**/TeacherBarcodeCards-*.js',
+            '**/QrCodeBlock-*.js',
+          ],
           // Tanpa ini, service worker (scope "/") ikut menangkap navigasi ke
           // /modul-ajar/ (aplikasi terpisah yang di-hosting di subpath yang
           // sama) dan malah menyajikan index.html ERP portal yang ke-cache,

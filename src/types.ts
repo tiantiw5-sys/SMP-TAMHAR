@@ -157,6 +157,21 @@ export interface ActivityLog {
   timestamp: string;
 }
 
+// Saklar on/off per bagian di Portal Orang Tua — diatur Super Admin di menu
+// Pengaturan, untuk jaga-jaga kalau sewaktu-waktu ada informasi yang perlu
+// disembunyikan dari orang tua (mis. status kehadiran guru) tanpa perlu
+// ubah kode. Opsional & default semua `true` (tampil semua seperti sebelum
+// fitur ini ada) — supaya settings lama yang belum punya field ini tidak
+// tiba-tiba menyembunyikan apa pun.
+export interface ParentPortalVisibility {
+  waliKelas: boolean;
+  attendanceRecap: boolean;
+  calendar: boolean;
+  schedule: boolean;
+  teacherAttendance: boolean;
+  uniforms: boolean;
+}
+
 export interface SystemSettings {
   schoolName: string;
   slogan: string;
@@ -168,6 +183,7 @@ export interface SystemSettings {
   facebook: string;
   ppdbStatus: 'Buka' | 'Tutup';
   lastBackupExportedAt?: string;
+  parentPortalVisibility?: ParentPortalVisibility;
 }
 
 export interface Student {

@@ -4276,6 +4276,65 @@ export default function StudentDashboard({
               </div>
             )}
 
+            {/* Kontrol Informasi Portal Orang Tua — checklist tampil/sembunyi
+                per bagian, tersimpan di settings.parentPortalVisibility.
+                Langsung tersimpan begitu dicentang/hilangkan (tidak perlu
+                tombol Simpan terpisah) — untuk jaga-jaga kalau sewaktu-waktu
+                ada informasi yang perlu buru-buru disembunyikan dari orang
+                tua tanpa perlu ubah kode. */}
+            {dashboardTab === 'settings' && isSuperAdmin && (
+              <div className="bg-[#0b1d33] border border-slate-800 rounded-2xl p-6 sm:p-8 mt-6">
+                <div className="border-b border-slate-800 pb-4 mb-6">
+                  <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">Kontrol Informasi Portal Orang Tua</h3>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Pilih bagian yang boleh tampil di Portal Orang Tua. Langsung aktif begitu dicentang/hilangkan — untuk jaga-jaga kalau sewaktu-waktu ada informasi yang perlu disembunyikan.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {(
+                    [
+                      { key: 'waliKelas', label: 'Kartu Wali Kelas' },
+                      { key: 'attendanceRecap', label: 'Rekap Kehadiran Murid' },
+                      { key: 'calendar', label: 'Kalender Kehadiran' },
+                      { key: 'schedule', label: 'Jadwal Mata Pelajaran' },
+                      { key: 'teacherAttendance', label: 'Status Kehadiran Guru (di Jadwal)' },
+                      { key: 'uniforms', label: 'Informasi Seragam' },
+                    ] as { key: keyof NonNullable<SystemSettings['parentPortalVisibility']>; label: string }[]
+                  ).map(({ key, label }) => {
+                    const checked = settings.parentPortalVisibility?.[key] ?? true;
+                    return (
+                      <label
+                        key={key}
+                        className="flex items-center gap-3 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs font-bold text-slate-300 cursor-pointer hover:border-slate-700"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const nextChecked = e.target.checked;
+                            setSettings((prev) => ({
+                              ...prev,
+                              parentPortalVisibility: {
+                                waliKelas: prev.parentPortalVisibility?.waliKelas ?? true,
+                                attendanceRecap: prev.parentPortalVisibility?.attendanceRecap ?? true,
+                                calendar: prev.parentPortalVisibility?.calendar ?? true,
+                                schedule: prev.parentPortalVisibility?.schedule ?? true,
+                                teacherAttendance: prev.parentPortalVisibility?.teacherAttendance ?? true,
+                                uniforms: prev.parentPortalVisibility?.uniforms ?? true,
+                                [key]: nextChecked,
+                              },
+                            }));
+                          }}
+                          className="w-4 h-4 rounded accent-amber-400 cursor-pointer"
+                        />
+                        {label}
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Backup & Ekspor Seluruh Data — manual, sekali klik oleh Super Admin.
                 Sengaja TIDAK otomatis/terjadwal: data murid & guru ada di dalamnya,
                 jadi harus selalu ada manusia yang sadar & memilih kapan data ini

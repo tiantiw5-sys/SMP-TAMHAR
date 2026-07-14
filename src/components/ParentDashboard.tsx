@@ -3,8 +3,8 @@ import {
   GraduationCap, LogOut, CheckCircle2, Activity, FileText, XCircle,
   Calendar, Shirt, Sparkles, RefreshCw, ChevronLeft, ChevronRight, BookOpen, Radio, UserCircle2,
 } from 'lucide-react';
-import { User as UserType, Student, StudentAttendanceRecord, StudentAttendanceStatus, TeachingScheduleDay, Uniform, SystemSettings, Teacher } from '../types';
-import { getMyChild, getMyChildAttendance } from '../lib/portalDb';
+import { User as UserType, Student, StudentAttendanceRecord, StudentAttendanceStatus, TeachingScheduleDay, Uniform, SystemSettings, Teacher, TeacherAttendanceRecord } from '../types';
+import { getMyChild, getMyChildAttendance, getTeacherAttendanceForDate } from '../lib/portalDb';
 
 interface ParentDashboardProps {
   currentUser: UserType;
@@ -59,17 +59,37 @@ function addMonths(key: string, delta: number): string {
   return monthKey(d.getFullYear(), d.getMonth());
 }
 
+const DEFAULT_VISIBILITY: Required<NonNullable<SystemSettings['parentPortalVisibility']>> = {
+  waliKelas: true,
+  attendanceRecap: true,
+  calendar: true,
+  schedule: true,
+  teacherAttendance: true,
+  uniforms: true,
+};
+
 export default function ParentDashboard({ currentUser, onLogout, teachingSchedule, uniforms, settings, teachers }: ParentDashboardProps) {
   const [child, setChild] = useState<Student | null>(null);
   const [attendance, setAttendance] = useState<StudentAttendanceRecord[]>([]);
+  const [teacherAttendanceToday, setTeacherAttendanceToday] = useState<TeacherAttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [scheduleDay, setScheduleDay] = useState<(typeof SCHEDULE_DAYS)[number]>('Senin');
 
+  // Saklar tampil/sembunyi per bagian, diatur Super Admin (menu Pengaturan)
+  // — default semua tampil kalau belum pernah diatur (settings lama).
+  const visibility = { ...DEFAULT_VISIBILITY, ...settings.parentPortalVisibility };
+
   const loadData = async () => {
     setLoading(true);
     setLoadError(false);
-    const [childData, attendanceData] = await Promise.all([getMyChild(), getMyChildAttendance()]);
+    const [childData, attendanceData, teacherAttendanceData] = await Promise.all([
+      getMyChild(),
+      getMyChildAttendance(),
+      // Tidak perlu ditarik sama sekali kalau Super Admin sudah matikan badge
+      // ini — hemat 1 request RPC + payload-nya untuk semua orang tua.
+      visibility.teacherAttendance ? getTeacherAttendanceForDate() : Promise.resolve([]),
+    ]);
     if (!childData) {
       setLoadError(true);
       setLoading(false);
@@ -77,6 +97,7 @@ export default function ParentDashboard({ currentUser, onLogout, teachingSchedul
     }
     setChild(childData);
     setAttendance(attendanceData);
+    setTeacherAttendanceToday(teacherAttendanceData);
     setLoading(false);
   };
 
@@ -162,6 +183,17 @@ export default function ParentDashboard({ currentUser, onLogout, teachingSchedul
     return map;
   }, [teachers]);
 
+  // Status kehadiran guru HARI INI (bukan per hari-di-jadwal-mingguan yang
+  // sedang dipilih) — cuma masuk akal ditampilkan kalau tab jadwal yang
+  // sedang dibuka juga hari ini (lihat pemakaian di bawah, dicek scheduleDay
+  // === todayWeekday), supaya tidak salah kesan menampilkan "Hadir" untuk
+  // jadwal hari lain yang belum/sudah lewat.
+  const teacherAttendanceByTeacherId = useMemo(() => {
+    const map = new Map<string, StudentAttendanceStatus>();
+    for (const r of teacherAttendanceToday) map.set(r.teacherId, r.status);
+    return map;
+  }, [teacherAttendanceToday]);
+
   const activeScheduleDay = useMemo(
     () => teachingSchedule.find((d) => d.day === scheduleDay) ?? null,
     [teachingSchedule, scheduleDay]
@@ -233,6 +265,7 @@ export default function ParentDashboard({ currentUser, onLogout, teachingSchedul
             </div>
 
             {/* WALI KELAS — dari data Dewan Guru */}
+            {visibility.waliKelas && (
             <div className="bg-white border border-[#e1e0d9] rounded-3xl p-5 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <UserCircle2 className="w-4 h-4 text-[#1baf7a]" />
@@ -261,8 +294,10 @@ export default function ParentDashboard({ currentUser, onLogout, teachingSchedul
                 </p>
               )}
             </div>
+            )}
 
             {/* REKAP KEHADIRAN — PILIH RENTANG BULAN */}
+            {visibility.attendanceRecap && (
             <div className="bg-white border border-[#e1e0d9] rounded-3xl p-5 sm:p-6 space-y-4">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <p className="text-xs font-black uppercase tracking-widest text-[#898781]">Rekap Kehadiran</p>
@@ -341,8 +376,10 @@ export default function ParentDashboard({ currentUser, onLogout, teachingSchedul
                 </div>
               )}
             </div>
+            )}
 
             {/* CALENDAR */}
+            {visibility.calendar && (
             <div className="bg-white border border-[#e1e0d9] rounded-3xl p-5 sm:p-6">
               <div className="flex items-center justify-between gap-2 mb-4">
                 <div className="flex items-center gap-2 min-w-0">
@@ -404,8 +441,10 @@ export default function ParentDashboard({ currentUser, onLogout, teachingSchedul
                 })}
               </div>
             </div>
+            )}
 
             {/* JADWAL MATA PELAJARAN — mingguan, default ke hari ini */}
+            {visibility.schedule && (
             <div className="bg-white border border-[#e1e0d9] rounded-3xl p-5 sm:p-6">
               <div className="flex items-center gap-2 mb-4">
                 <BookOpen className="w-4 h-4 text-[#4a3aa7]" />
@@ -455,6 +494,12 @@ export default function ParentDashboard({ currentUser, onLogout, teachingSchedul
 
                     const teacher = teacherByName.get(teacherName);
                     const subject = teacher?.subject ?? PLACEHOLDER_SUBJECTS[teacherName] ?? 'Belum diketahui';
+                    // Cuma tampil kalau tab yang dibuka = hari ini beneran —
+                    // absensi guru itu data per-TANGGAL, tidak relevan
+                    // ditempelkan ke jadwal hari lain di template mingguan ini.
+                    const showTeacherAttendance = visibility.teacherAttendance && scheduleDay === todayWeekday && teacher;
+                    const attendanceStatus = showTeacherAttendance ? teacherAttendanceByTeacherId.get(teacher.id) : undefined;
+                    const attendanceStyle = attendanceStatus ? STATUS_STYLE[attendanceStatus] : null;
 
                     return (
                       <li key={i} className="flex items-center gap-3 bg-[#f9f9f7] rounded-xl px-3.5 py-2.5">
@@ -465,14 +510,33 @@ export default function ParentDashboard({ currentUser, onLogout, teachingSchedul
                           <p className="text-xs font-bold text-[#0b0b0b] truncate">{subject}</p>
                           <p className="text-[10px] text-[#898781] truncate">{teacherName}</p>
                         </div>
+                        {showTeacherAttendance && (
+                          <span
+                            className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wide px-2 py-1 rounded-lg shrink-0"
+                            style={
+                              attendanceStyle
+                                ? { background: attendanceStyle.bg, color: attendanceStyle.text }
+                                : { background: '#e1e0d9', color: '#898781' }
+                            }
+                          >
+                            {attendanceStyle ? (
+                              <attendanceStyle.Icon className="w-3 h-3" />
+                            ) : (
+                              <Activity className="w-3 h-3" />
+                            )}
+                            {attendanceStyle ? attendanceStyle.label : 'Belum Absen'}
+                          </span>
+                        )}
                       </li>
                     );
                   })}
                 </ul>
               )}
             </div>
+            )}
 
             {/* INFORMASI SERAGAM — koleksi lengkap, sama seperti di landing page */}
+            {visibility.uniforms && (
             <div className="bg-white border border-[#e1e0d9] rounded-3xl p-5 sm:p-6">
               <div className="flex items-center gap-2 mb-1">
                 <Shirt className="w-4 h-4 text-[#eb6834]" />
@@ -514,6 +578,7 @@ export default function ParentDashboard({ currentUser, onLogout, teachingSchedul
                 </div>
               )}
             </div>
+            )}
 
             <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#898781] font-semibold py-2">
               <Sparkles className="w-3 h-3" />

@@ -15,7 +15,7 @@
 
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, BookOpen, ChevronDown, Radio, Sparkles, Users2, Zap } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronDown, Radio, Sparkles, UserCircle2, Users2, Zap } from 'lucide-react';
 import type { Teacher, TeachingScheduleDay } from '../types';
 import SchoolLogo from './SchoolLogo';
 
@@ -85,6 +85,14 @@ export default function SubjectSchedule({ teachers, teachingSchedule, initialCla
     for (const t of teachers) map.set(t.name, t);
     return map;
   }, [teachers]);
+
+  // Wali kelas tidak berubah per hari (beda dengan Guru Piket) — dicocokkan
+  // lewat field terstruktur Teacher.waliKelas (dropdown di form Tambah/Edit
+  // Guru), sama seperti kartu "Wali Kelas" di Portal Orang Tua.
+  const waliKelas = useMemo(
+    () => teachers.find((t) => t.waliKelas === selectedClass) ?? null,
+    [teachers, selectedClass]
+  );
 
   const activeDay = useMemo(
     () => teachingSchedule.find((d) => d.day === selectedDay) ?? null,
@@ -197,6 +205,12 @@ export default function SubjectSchedule({ teachers, teachingSchedule, initialCla
                 <Zap className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                 Kelas {selectedClass} &middot; {selectedDay}
               </p>
+              {waliKelas && (
+                <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
+                  <UserCircle2 className="w-3 h-3 shrink-0" />
+                  Wali Kelas: <span className="text-slate-200 font-semibold truncate">{waliKelas.name}</span>
+                </p>
+              )}
               {activeDay?.piketTeacher && (
                 <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
                   <Users2 className="w-3 h-3 shrink-0" />

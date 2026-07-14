@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { 
   ArrowRight, Check, Star, BookOpen, Heart, 
   Sparkles, Mail, Lock, X, CheckCircle2, ChevronRight, 
@@ -29,15 +29,22 @@ import GallerySlideshow from './components/GallerySlideshow';
 import { SchoolOrgChartFull, OsisOrgChartFull } from './components/OrgStructureCharts';
 import { SEJARAH_IMAGE_URL, PPDB_FLOW_IMAGE_URL, PPDB_FORM_URL } from './orgStructure';
 import CourseCard from './components/CourseCard';
-import StudentDashboard from './components/StudentDashboard';
-import ParentDashboard from './components/ParentDashboard';
+// Code-split lewat React.lazy — komponen ADMIN/berat ini cuma dipakai staf
+// yang sudah login (atau lewat link khusus), jadi TIDAK perlu ikut ke-download
+// oleh pengunjung publik landing page (mengurangi ukuran bundle awal &
+// egress). Sengaja TIDAK termasuk UnifiedAttendanceKiosk/MuridAttendanceGate
+// (jalur kiosk scan absensi guru+murid di gerbang sekolah) — itu harus tetap
+// selalu ikut ke-load & precache PWA seperti sebelumnya, tidak boleh ada
+// jeda loading tambahan di sana.
+const StudentDashboard = lazy(() => import('./components/StudentDashboard'));
+const ParentDashboard = lazy(() => import('./components/ParentDashboard'));
+const StudentBarcodeCards = lazy(() => import('./components/StudentBarcodeCards'));
+const TeacherBarcodeCards = lazy(() => import('./components/TeacherBarcodeCards'));
+const ClassAnnouncements = lazy(() => import('./components/ClassAnnouncements'));
+const SubjectSchedule = lazy(() => import('./components/SubjectSchedule'));
+const AnnotationMode = lazy(() => import('./components/AnnotationMode'));
 import UnifiedAttendanceKiosk from './components/UnifiedAttendanceKiosk';
-import StudentBarcodeCards from './components/StudentBarcodeCards';
-import TeacherBarcodeCards from './components/TeacherBarcodeCards';
 import MuridAttendanceGate from './components/MuridAttendanceGate';
-import ClassAnnouncements from './components/ClassAnnouncements';
-import SubjectSchedule from './components/SubjectSchedule';
-import AnnotationMode from './components/AnnotationMode';
 import { formatWhatsAppUrl, validatePasswordStrength } from './auth';
 import { NAV_ITEMS } from './constants';
 import { isSupabaseEnabled, getSupabase } from './lib/supabase';
@@ -65,6 +72,18 @@ import { useLandingPagePresence } from './lib/presence';
 import { useIdleTimeout } from './lib/idleTimeout';
 import { todayDateKey, mergeAttendanceRecord } from './lib/studentAttendance';
 import { mergeTeacherAttendanceRecord } from './lib/teacherAttendance';
+
+// Fallback Suspense generik buat komponen yang di-lazy-load (lihat React.lazy
+// di atas) — cuma muncul sekejap saat chunk-nya baru pertama kali diunduh
+// browser, sesudahnya browser sudah nge-cache chunk itu jadi tidak muncul lagi.
+function RouteLoadingFallback() {
+  return (
+    <div className="min-h-screen bg-[#070f1e] flex flex-col items-center justify-center text-slate-100 font-sans">
+      <div className="w-12 h-12 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mb-4" />
+      <p className="text-sm font-semibold text-slate-300">Memuat...</p>
+    </div>
+  );
+}
 
 // Saves one collection to Supabase in isolation, skipping the pass right after
 // initial hydration. Kept per-collection (rather than one effect for everything)
@@ -933,12 +952,20 @@ export default function App() {
 
   if (pengumumanKelasOpen) {
     const kelasParam = new URLSearchParams(window.location.search).get('kelas') ?? undefined;
-    return <ClassAnnouncements roster={classRoster} initialClass={kelasParam} />;
+    return (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <ClassAnnouncements roster={classRoster} initialClass={kelasParam} />
+      </Suspense>
+    );
   }
 
   if (pelajaranOpen) {
     const kelasParam = new URLSearchParams(window.location.search).get('kelas') ?? undefined;
-    return <SubjectSchedule teachers={teachers} teachingSchedule={teachingSchedule} initialClass={kelasParam} />;
+    return (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <SubjectSchedule teachers={teachers} teachingSchedule={teachingSchedule} initialClass={kelasParam} />
+      </Suspense>
+    );
   }
 
   if (attendanceRouteActive) {
@@ -988,10 +1015,18 @@ export default function App() {
     }
 
     if (barcodeCardsGuruOpen) {
-      return <TeacherBarcodeCards teachers={teachers} />;
+      return (
+        <Suspense fallback={<RouteLoadingFallback />}>
+          <TeacherBarcodeCards teachers={teachers} />
+        </Suspense>
+      );
     }
 
-    return <StudentBarcodeCards students={students} classFilter={barcodeClassFilter} />;
+    return (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <StudentBarcodeCards students={students} classFilter={barcodeClassFilter} />
+      </Suspense>
+    );
   }
 
   return (
@@ -1053,6 +1088,7 @@ export default function App() {
             exit={{ opacity: 0, scale: 0.99 }}
             transition={{ duration: 0.3 }}
           >
+            <Suspense fallback={<RouteLoadingFallback />}>
             {currentUser.role === 'Orang Tua' ? (
               <ParentDashboard
                 currentUser={currentUser}
@@ -1103,6 +1139,7 @@ export default function App() {
               addActivityLog={addActivityLog}
             />
             )}
+            </Suspense>
           </motion.div>
 
         ) : (
@@ -1905,12 +1942,20 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <AnnotationMode
-        enabled={isLoggedIn && currentUser?.role === 'Super Admin'}
-        authorName={currentUser?.name ?? 'Super Admin'}
-        annotations={annotations}
-        setAnnotations={setAnnotations}
-      />
+      {/* Dirender (jadi lazy chunk-nya baru diunduh) HANYA untuk sesi Super
+          Admin yang sudah login — bukan cuma dikontrol lewat prop `enabled`,
+          supaya pengunjung publik/staf lain sama sekali tidak ikut menarik
+          chunk AnnotationMode ini. */}
+      {isLoggedIn && currentUser?.role === 'Super Admin' && (
+        <Suspense fallback={null}>
+          <AnnotationMode
+            enabled
+            authorName={currentUser?.name ?? 'Super Admin'}
+            annotations={annotations}
+            setAnnotations={setAnnotations}
+          />
+        </Suspense>
+      )}
 
     </div>
   );

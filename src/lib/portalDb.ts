@@ -468,6 +468,27 @@ export const getMyChildAttendance = async (): Promise<StudentAttendanceRecord[]>
   return (data as StudentAttendanceRecord[]) ?? [];
 };
 
+// Absensi guru pada 1 tanggal (default hari ini) — lewat RPC
+// get_teacher_attendance_for_date supaya role 'Orang Tua' (yang tidak punya
+// akses baca langsung ke tabel teacher_attendance) tetap bisa lihat siapa
+// guru yang hadir/tidak hari itu, dipakai Portal Orang Tua di jadwal
+// pelajaran anaknya.
+export const getTeacherAttendanceForDate = async (
+  date: string = todayDateKey()
+): Promise<TeacherAttendanceRecord[]> => {
+  const supabase = getSupabase();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase.rpc('get_teacher_attendance_for_date', { p_date: date });
+
+  if (error) {
+    console.error('[portalDb] Gagal memuat absensi guru:', error.message);
+    return [];
+  }
+
+  return (data as TeacherAttendanceRecord[]) ?? [];
+};
+
 // ============================================================
 // student_attendance — tabel normal (1 baris = 1 catatan absensi murid),
 // menggantikan collection_key='studentAttendance' yang dulu 1 blob JSONB

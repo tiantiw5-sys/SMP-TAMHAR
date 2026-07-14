@@ -20,7 +20,15 @@ export const INITIAL_SETTINGS: SystemSettings = {
   whatsapp: CONTACT_WHATSAPP,
   instagram: 'https://www.instagram.com/smp_tamanharapan1/?hl=en',
   facebook: 'SMP Taman Harapan Bekasi',
-  ppdbStatus: 'Buka'
+  ppdbStatus: 'Buka',
+  parentPortalVisibility: {
+    waliKelas: true,
+    attendanceRecap: true,
+    calendar: true,
+    schedule: true,
+    teacherAttendance: true,
+    uniforms: true,
+  },
 };
 
 export const INITIAL_VISION_MISSION: VisionMission = {
