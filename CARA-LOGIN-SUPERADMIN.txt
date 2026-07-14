@@ -1,0 +1,28 @@
+LOGIN GAGAL? — IKUTI INI (5 MENIT)
+==================================
+
+Penyebab: akun superadmin BELUM ADA di Supabase (bukan bug HP/HTTPS).
+
+CARA TERMUDAH (tanpa SQL):
+1. Buka https://supabase.com/dashboard → project tmbrfhjfjbfhrpplekyq
+2. Authentication → Users → Add user → Create new user
+3. Email:    superadmin@smptamhar.com
+4. Password: superadmin
+5. Centang:  Auto Confirm User  ← WAJIB
+6. Klik Create user
+7. SQL Editor → jalankan baris ini:
+
+   update public.profiles
+   set name = 'Tristian Novansyah, S.Kom',
+       role = 'Super Admin',
+       must_change_password = true
+   where email = 'superadmin@smptamhar.com';
+
+8. Buka https://192.168.1.70:3001/
+   ID: superadmin
+   Password: superadmin
+
+CARA ALTERNATIF (SQL sekali jalan):
+- SQL Editor → paste isi file supabase/fix_superadmin_login.sql → Run
+
+Setelah masuk: ganti password saat diminta.

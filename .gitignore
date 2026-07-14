@@ -1,8 +1,18 @@
 node_modules/
 build/
 dist/
+dev-dist/
 coverage/
 .DS_Store
 *.log
+*.zip
 .env*
 !.env.example
+
+# Data pribadi murid asli (nama/NIS/NISN) — jangan pernah ikut commit/publik.
+private-student-data/
+src/data/*-full.json
+
+# Cache/state lokal Supabase CLI (project ref, versi, dsb) — bukan sesuatu
+# yang perlu/boleh di-version-control, beda tiap mesin.
+supabase/.temp/

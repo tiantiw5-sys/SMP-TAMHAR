@@ -1,0 +1,131 @@
+/**
+ * Buat akun Orang Tua secara massal, 1 akun per murid di
+ * private-student-data/students-2627.json (dibuat oleh Claude dari roster
+ * tahun ajaran 2026/2027 + import-report-2627.txt).
+ *
+ * Jalankan SEKALI — aman diulang, akun yang sudah ada otomatis dilewati.
+ * Butuh Service Role Key dari Supabase Dashboard → Project Settings → API.
+ *
+ * PowerShell:
+ *   $env:SUPABASE_SERVICE_ROLE_KEY="service-role-key-anda"
+ *   node scripts/create-parent-accounts.mjs
+ *
+ * WAJIB jalankan supabase/schema.sql (bagian PORTAL ORANG TUA) di SQL
+ * Editor DULU sebelum menjalankan skrip ini — skrip ini butuh role
+ * 'Orang Tua' dan kolom profiles.linked_student_id sudah ada.
+ */
+
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const envPath = join(__dirname, '..', '.env.local');
+
+let url = process.env.VITE_SUPABASE_URL?.trim();
+let serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+if (!url || !serviceRole) {
+  try {
+    const raw = readFileSync(envPath, 'utf8');
+    for (const line of raw.split('\n')) {
+      if (!url && line.startsWith('VITE_SUPABASE_URL=')) url = line.split('=').slice(1).join('=').trim();
+      if (!serviceRole && line.startsWith('SUPABASE_SERVICE_ROLE_KEY=')) serviceRole = line.split('=').slice(1).join('=').trim();
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+if (!url) {
+  console.error('VITE_SUPABASE_URL tidak ditemukan (.env.local).');
+  process.exit(1);
+}
+if (!serviceRole) {
+  console.error('Set SUPABASE_SERVICE_ROLE_KEY dulu (Supabase Dashboard -> Project Settings -> API -> service_role).');
+  console.error('PowerShell: $env:SUPABASE_SERVICE_ROLE_KEY="..."; node scripts/create-parent-accounts.mjs');
+  process.exit(1);
+}
+
+const studentsPath = join(__dirname, '..', 'private-student-data', 'students-2627.json');
+const students = JSON.parse(readFileSync(studentsPath, 'utf8'));
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const sanitizeId = (id) => id.toLowerCase().replace(/[^a-z0-9]/g, '');
+const randomPin = () => String(Math.floor(100000 + Math.random() * 900000));
+
+async function adminCreateUser(email, password) {
+  const res = await fetch(`${url}/auth/v1/admin/users`, {
+    method: 'POST',
+    headers: {
+      apikey: serviceRole,
+      Authorization: `Bearer ${serviceRole}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password, email_confirm: true }),
+  });
+  const body = await res.json().catch(() => ({}));
+  return { status: res.status, body };
+}
+
+async function updateProfile(userId, patch) {
+  const res = await fetch(`${url}/rest/v1/profiles?id=eq.${userId}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: serviceRole,
+      Authorization: `Bearer ${serviceRole}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify(patch),
+  });
+  return res.status;
+}
+
+const results = [];
+
+for (const s of students) {
+  const loginId = `ortu${sanitizeId(s.id)}`;
+  const email = `${loginId}@tamhar.local`;
+  const password = randomPin();
+
+  const created = await adminCreateUser(email, password);
+  const userId = created.body?.id || created.body?.user?.id;
+  const alreadyExists = created.status === 422 || /already registered|already exists/i.test(created.body?.msg || created.body?.error_code || '');
+
+  if (!userId) {
+    if (alreadyExists) {
+      console.log(`LEWATI  ${s.name} (${loginId}) — akun sudah ada dari run sebelumnya.`);
+      results.push({ student: s.name, className: s.className, loginId, password: '(sudah ada — lihat run sebelumnya)', status: 'sudah_ada' });
+    } else {
+      console.log(`GAGAL   ${s.name} (${loginId}): ${created.body?.msg || created.body?.error_code || created.status}`);
+      results.push({ student: s.name, className: s.className, loginId, password: '(GAGAL DIBUAT)', status: 'error' });
+    }
+    await sleep(150);
+    continue;
+  }
+
+  const patchStatus = await updateProfile(userId, {
+    role: 'Orang Tua',
+    name: `Orang Tua ${s.name}`,
+    linked_student_id: s.id,
+    must_change_password: true,
+  });
+
+  const ok = patchStatus < 300;
+  console.log(`${ok ? 'OK      ' : 'PROFIL-GAGAL'} ${s.name} (${loginId})`);
+  results.push({ student: s.name, className: s.className, loginId, password, status: ok ? 'ok' : 'profil_gagal' });
+  await sleep(150);
+}
+
+const csvLines = ['Nama Murid,Kelas,ID Login,Password Awal,Status'];
+for (const r of results) {
+  csvLines.push([r.student, r.className, r.loginId, r.password, r.status].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
+}
+const outPath = join(__dirname, '..', 'private-student-data', 'akun-orang-tua-2627.csv');
+writeFileSync(outPath, csvLines.join('\n'), 'utf8');
+
+const okCount = results.filter((r) => r.status === 'ok').length;
+console.log(`\nSelesai. ${okCount}/${results.length} akun baru berhasil dibuat (sisanya sudah ada / gagal, lihat kolom Status).`);
+console.log(`Daftar ID login + password awal: ${outPath}`);
+console.log('File CSV ini berisi data pribadi murid + password — JANGAN pernah upload/kirim ke tempat publik (sudah otomatis di-gitignore).');

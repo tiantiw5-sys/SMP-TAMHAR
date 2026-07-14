@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.smptamhar.portal",
+    "sha256_cert_fingerprints": ["5E:CC:EF:E3:D5:63:75:10:D9:89:B1:47:54:EE:D0:93:A2:03:2B:85:BC:27:44:A0:29:7D:E8:2F:AE:4C:F4:86"]
+  }
+}]

@@ -1,0 +1,24 @@
+CARA ONLINEKAN PORTAL SMP TAMHAR (VPS)
+======================================
+
+SEBELUM DEPLOY — WAJIB:
+1. Jalankan supabase/schema.sql di Supabase SQL Editor (RLS v2)
+2. Ganti password superadmin (jangan pakai default)
+3. Set VITE_ALLOW_SEED=true sekali saat build pertama jika DB masih kosong
+
+BUILD DI VPS / CI:
+  npm ci
+  # isi .env.production: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+  npm run build
+  # hasil di folder dist/
+
+NGINX (contoh):
+  root /var/www/smptamhar/dist;
+  location / { try_files $uri $uri/ /index.html; }
+  # tambahkan HTTPS Let's Encrypt + security headers (lihat HANDOFF)
+
+ABSENSI MURID / SCANNER:
+  Hanya Super Admin, Manajerial Sekolah, Guru Piket (login wajib).
+  URL: https://domain-anda/#absen-murid
+
+Login: ID staf (mis. superadmin) — buat & kelola akun lewat Supabase Auth.
