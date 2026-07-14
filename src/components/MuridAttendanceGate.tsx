@@ -2,9 +2,9 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  *
- * Gerbang akses untuk #absen-murid, #kartu-barcode-murid, dan (lewat prop
- * `variant="guru"`) #absen-guru, #kartu-barcode-guru — role yang diizinkan
- * sama persis untuk murid & guru jadi dipakai bersama, bukan diduplikasi.
+ * Gerbang akses untuk #kartu-barcode-murid, #kartu-barcode-guru, dan
+ * #absen-scan (kiosk scan universal guru+murid) — role yang diizinkan
+ * sama persis untuk ketiganya jadi dipakai bersama, bukan diduplikasi.
  * Hanya Super Admin, Manajerial Sekolah, dan Guru Piket.
  */
 
@@ -16,7 +16,7 @@ import type { User } from '../types';
 
 interface LoginProps {
   mode: 'login';
-  variant?: 'murid' | 'guru';
+  variant?: 'murid' | 'guru' | 'scan';
   onSubmit: (e: React.FormEvent) => void;
   loginId: string;
   setLoginId: (v: string) => void;
@@ -27,16 +27,22 @@ interface LoginProps {
 
 interface DeniedProps {
   mode: 'denied';
-  variant?: 'murid' | 'guru';
+  variant?: 'murid' | 'guru' | 'scan';
   user: User;
   onBack: () => void;
 }
 
 type Props = LoginProps | DeniedProps;
 
+const LABEL_BY_VARIANT: Record<'murid' | 'guru' | 'scan', string> = {
+  murid: 'murid',
+  guru: 'guru',
+  scan: 'guru & murid',
+};
+
 export default function MuridAttendanceGate(props: Props) {
   const [showPassword, setShowPassword] = useState(false);
-  const label = props.variant === 'guru' ? 'guru' : 'murid';
+  const label = LABEL_BY_VARIANT[props.variant ?? 'murid'];
 
   if (props.mode === 'denied') {
     return (
@@ -75,7 +81,7 @@ export default function MuridAttendanceGate(props: Props) {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-400/15 border border-amber-400/40">
             <ScanLine className="w-10 h-10 text-amber-300" />
           </div>
-          <h1 className="text-2xl font-black">Absensi {label === 'guru' ? 'Guru' : 'Murid'} — Login Wajib</h1>
+          <h1 className="text-2xl font-black">Absensi {label} — Login Wajib</h1>
           <p className="text-slate-400 text-sm">
             Scanner & absensi {label} hanya untuk Super Admin, Manajerial Sekolah, dan Guru Piket.
           </p>

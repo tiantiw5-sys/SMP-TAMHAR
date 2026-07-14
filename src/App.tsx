@@ -31,9 +31,8 @@ import { SEJARAH_IMAGE_URL, PPDB_FLOW_IMAGE_URL, PPDB_FORM_URL } from './orgStru
 import CourseCard from './components/CourseCard';
 import StudentDashboard from './components/StudentDashboard';
 import ParentDashboard from './components/ParentDashboard';
-import StudentAttendanceKiosk from './components/StudentAttendanceKiosk';
+import UnifiedAttendanceKiosk from './components/UnifiedAttendanceKiosk';
 import StudentBarcodeCards from './components/StudentBarcodeCards';
-import TeacherAttendanceKiosk from './components/TeacherAttendanceKiosk';
 import TeacherBarcodeCards from './components/TeacherBarcodeCards';
 import MuridAttendanceGate from './components/MuridAttendanceGate';
 import ClassAnnouncements from './components/ClassAnnouncements';
@@ -199,14 +198,15 @@ export default function App() {
   const [teachingSchedule, setTeachingSchedule] = useState<TeachingScheduleDay[]>(initialPortalData.teachingSchedule);
   const [teacherAttendanceLog, setTeacherAttendanceLog] = useState<TeacherAttendanceRecord[]>(initialPortalData.teacherAttendanceLog);
 
-  const [kioskMuridOpen, setKioskMuridOpen] = useState(
-    () => window.location.hash === '#absen-murid'
+  // #absen-murid dan #absen-guru (kiosk terpisah) sudah digabung jadi 1
+  // kiosk universal di #absen-scan (lihat UnifiedAttendanceKiosk) — 1 alat
+  // scan di gerbang cukup untuk guru & murid sekaligus, kodenya dicocokkan
+  // otomatis ke koleksi yang cocok.
+  const [unifiedScanOpen, setUnifiedScanOpen] = useState(
+    () => window.location.hash === '#absen-scan'
   );
   const [barcodeCardsOpen, setBarcodeCardsOpen] = useState(
     () => window.location.hash === '#kartu-barcode-murid'
-  );
-  const [kioskGuruOpen, setKioskGuruOpen] = useState(
-    () => window.location.hash === '#absen-guru'
   );
   const [barcodeCardsGuruOpen, setBarcodeCardsGuruOpen] = useState(
     () => window.location.hash === '#kartu-barcode-guru'
@@ -669,9 +669,8 @@ export default function App() {
   useEffect(() => {
     const syncSpecialRoutes = () => {
       const hash = window.location.hash;
-      setKioskMuridOpen(hash === '#absen-murid');
+      setUnifiedScanOpen(hash === '#absen-scan');
       setBarcodeCardsOpen(hash === '#kartu-barcode-murid');
-      setKioskGuruOpen(hash === '#absen-guru');
       setBarcodeCardsGuruOpen(hash === '#kartu-barcode-guru');
       setPengumumanKelasOpen(hash === '#pengumuman-kelas');
       setPelajaranOpen(hash === '#pelajaran');
@@ -691,9 +690,7 @@ export default function App() {
     return () => window.removeEventListener('beforeunload', flushOnExit);
   }, []);
 
-  const muridRouteActive = kioskMuridOpen || barcodeCardsOpen;
-  const guruAttendanceRouteActive = kioskGuruOpen || barcodeCardsGuruOpen;
-  const kioskRouteActive = muridRouteActive || guruAttendanceRouteActive;
+  const attendanceRouteActive = unifiedScanOpen || barcodeCardsOpen || barcodeCardsGuruOpen;
 
   // Auto-clear alert notices after timeout
   useEffect(() => {
@@ -895,11 +892,12 @@ export default function App() {
   // Auto-logout kalau tidak ada aktivitas (klik/ketik/scroll) selama 10 menit
   // — supaya sesi tidak tertinggal terbuka kalau komputer/HP ditinggal begitu
   // saja saat masih login (relevan untuk komputer bersama di kantor sekolah).
-  // Dimatikan khusus saat layar kiosk scanner/cetak kartu barcode murid
-  // terbuka (#absen-murid, #kartu-barcode-murid) — layar itu memang sengaja
-  // dibiarkan menyala tanpa disentuh mouse/keyboard sambil menunggu murid
-  // scan kartu satu-satu, bukan berarti ditinggal begitu saja.
-  useIdleTimeout(isLoggedIn && !kioskRouteActive, () => handleLogout('idle'), 10 * 60 * 1000);
+  // Dimatikan khusus saat layar kiosk scanner/cetak kartu barcode terbuka
+  // (#absen-scan, #kartu-barcode-murid, #kartu-barcode-guru) — layar itu
+  // memang sengaja dibiarkan menyala tanpa disentuh mouse/keyboard sambil
+  // menunggu guru/murid scan kartu satu-satu, bukan berarti ditinggal
+  // begitu saja.
+  useIdleTimeout(isLoggedIn && !attendanceRouteActive, () => handleLogout('idle'), 10 * 60 * 1000);
 
   // PPDB Interest Submit
   const handlePpdbInterestSubmit = (e: React.FormEvent) => {
@@ -943,11 +941,14 @@ export default function App() {
     return <SubjectSchedule teachers={teachers} teachingSchedule={teachingSchedule} initialClass={kelasParam} />;
   }
 
-  if (muridRouteActive) {
+  if (attendanceRouteActive) {
+    const gateVariant = unifiedScanOpen ? 'scan' : barcodeCardsGuruOpen ? 'guru' : 'murid';
+
     if (!isLoggedIn || !currentUser) {
       return (
         <MuridAttendanceGate
           mode="login"
+          variant={gateVariant}
           onSubmit={handleMuridGateAuthSubmit}
           loginId={loginEmail}
           setLoginId={setLoginEmail}
@@ -962,6 +963,7 @@ export default function App() {
       return (
         <MuridAttendanceGate
           mode="denied"
+          variant={gateVariant}
           user={currentUser}
           onBack={() => {
             window.location.hash = '';
@@ -970,63 +972,26 @@ export default function App() {
       );
     }
 
-    if (kioskMuridOpen) {
+    if (unifiedScanOpen) {
       return (
-        <StudentAttendanceKiosk
+        <UnifiedAttendanceKiosk
           students={students}
-          records={studentAttendance}
-          onRecordsChange={setStudentAttendance}
+          studentRecords={studentAttendance}
+          onStudentRecordsChange={setStudentAttendance}
+          teachers={teachers}
+          teacherRecords={teacherAttendanceLog}
+          onTeacherRecordsChange={setTeacherAttendanceLog}
           portalReady={portalReady}
           supabaseOn={supabaseOn}
         />
       );
+    }
+
+    if (barcodeCardsGuruOpen) {
+      return <TeacherBarcodeCards teachers={teachers} />;
     }
 
     return <StudentBarcodeCards students={students} classFilter={barcodeClassFilter} />;
-  }
-
-  if (guruAttendanceRouteActive) {
-    if (!isLoggedIn || !currentUser) {
-      return (
-        <MuridAttendanceGate
-          mode="login"
-          variant="guru"
-          onSubmit={handleMuridGateAuthSubmit}
-          loginId={loginEmail}
-          setLoginId={setLoginEmail}
-          loginPassword={loginPassword}
-          setLoginPassword={setLoginPassword}
-          error={muridGateError}
-        />
-      );
-    }
-
-    if (!canAccessMuridAttendance(currentUser.role)) {
-      return (
-        <MuridAttendanceGate
-          mode="denied"
-          variant="guru"
-          user={currentUser}
-          onBack={() => {
-            window.location.hash = '';
-          }}
-        />
-      );
-    }
-
-    if (kioskGuruOpen) {
-      return (
-        <TeacherAttendanceKiosk
-          teachers={teachers}
-          records={teacherAttendanceLog}
-          onRecordsChange={setTeacherAttendanceLog}
-          portalReady={portalReady}
-          supabaseOn={supabaseOn}
-        />
-      );
-    }
-
-    return <TeacherBarcodeCards teachers={teachers} />;
   }
 
   return (

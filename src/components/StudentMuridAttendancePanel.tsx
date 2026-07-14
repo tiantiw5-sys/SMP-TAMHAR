@@ -4,7 +4,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { ScanLine, UserCheck, ExternalLink, Search, Printer, Trash2 } from 'lucide-react';
+import { UserCheck, Search, Trash2 } from 'lucide-react';
 import type { Student, StudentAttendanceRecord, StudentAttendanceStatus, User } from '../types';
 import {
   formatCheckInTime,
@@ -94,11 +94,6 @@ export default function StudentMuridAttendancePanel({
     }
   };
 
-  const base = `${window.location.origin}${window.location.pathname}`;
-  const kioskUrl = `${base}#absen-murid`;
-  const cardsQuery = classFilter !== 'all' ? `?kelas=${encodeURIComponent(classFilter)}` : '';
-  const cardsUrl = `${base}${cardsQuery}#kartu-barcode-murid`;
-
   const formatIndoDate = (iso: string) => {
     try {
       return new Date(`${iso}T00:00:00`).toLocaleDateString('id-ID', {
@@ -132,35 +127,11 @@ export default function StudentMuridAttendancePanel({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-white tracking-tight">Absensi Murid</h2>
-          <p className="text-slate-400 text-sm mt-1">
-            Scan di pintu = Hadir otomatis. Lupa bawa kartu? Klik "Hadir" manual di sini. Izin, Sakit, Alpa juga diisi/direvisi manual — pilih tanggal di bawah untuk mengisi atau membetulkan hari yang sudah lewat.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <a
-            href={cardsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-600 text-white font-bold text-sm hover:bg-slate-700 transition-colors"
-          >
-            <Printer className="w-4 h-4" />
-            Cetak Kartu Barcode
-            <ExternalLink className="w-3.5 h-3.5 opacity-70" />
-          </a>
-          <a
-            href={kioskUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-400 text-slate-900 font-bold text-sm hover:bg-amber-300 transition-colors"
-          >
-            <ScanLine className="w-4 h-4" />
-            Buka Layar Scanner (Kiosk)
-            <ExternalLink className="w-3.5 h-3.5 opacity-70" />
-          </a>
-        </div>
+      <div>
+        <h2 className="text-2xl font-black text-white tracking-tight">Absensi Murid</h2>
+        <p className="text-slate-400 text-sm mt-1">
+          Scan di pintu = Hadir otomatis (buka kiosk scan lewat menu "SCANNER"). Lupa bawa kartu? Klik "Hadir" manual di sini. Izin, Sakit, Alpa juga diisi/direvisi manual — pilih tanggal di bawah untuk mengisi atau membetulkan hari yang sudah lewat.
+        </p>
       </div>
 
       <div className="rounded-2xl border border-slate-700/60 bg-slate-800/40 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -302,7 +273,7 @@ export default function StudentMuridAttendancePanel({
 
       <p className="text-xs text-slate-500 flex items-center gap-2">
         <UserCheck className="w-3.5 h-3.5" />
-        Pasang tablet/PC di pintu dengan scanner USB — buka link kiosk di atas. Barcode kartu = NIS siswa.
+        Pasang tablet/PC di pintu dengan scanner USB — buka kiosk scan lewat menu "SCANNER". Kartu murid = QR berisi NIS.
       </p>
     </div>
   );

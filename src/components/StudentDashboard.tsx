@@ -979,7 +979,7 @@ export default function StudentDashboard({
       !canAccessAttendance
     ) {
       setDashboardTab('overview');
-    } else if ((dashboardTab === 'murid-attendance' || dashboardTab === 'rekap-absensi-murid') && !canAccessMurid) {
+    } else if ((dashboardTab === 'murid-attendance' || dashboardTab === 'rekap-absensi-murid' || dashboardTab === 'scanner') && !canAccessMurid) {
       setDashboardTab('overview');
     } else if (dashboardTab === 'teachers' && !canAccessTeacherData) {
       setDashboardTab('overview');
@@ -2056,6 +2056,24 @@ export default function StudentDashboard({
               className={`${isMobileNavOpen ? 'block' : 'hidden'} lg:block space-y-1.5`}
             >
             <span className="text-xs lg:text-[10px] font-extrabold uppercase tracking-widest text-slate-400 px-3 block mb-2">MENU MODUL ERP</span>
+
+            {/* SCANNER — paling atas, sengaja terpisah dari grup "Absensi &
+                Kehadiran" di bawah supaya jadi SATU titik akses paling
+                menonjol untuk kiosk scan (guru & murid sekaligus) + cetak
+                kartu, bukan tersebar/berulang di beberapa tab. */}
+            {canAccessMurid && (
+              <button
+                onClick={() => setDashboardTab('scanner')}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer ${
+                  dashboardTab === 'scanner'
+                    ? 'bg-amber-400 text-slate-900 shadow'
+                    : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                }`}
+              >
+                <ScanLine className="w-4 h-4 shrink-0" />
+                <span>SCANNER</span>
+              </button>
+            )}
 
             {/* Overview — sekarang juga tampil untuk Guru Piket (sebelumnya disembunyikan). */}
             <button
@@ -4360,6 +4378,61 @@ export default function StudentDashboard({
               </div>
             )}
 
+            {/* SCANNER — satu-satunya titik akses kiosk scan (guru & murid
+                sekaligus) + cetak kartu QR, supaya tidak berulang/tersebar
+                di tab "Absensi Guru Piket" dan "Absensi Murid (Scan)". */}
+            {dashboardTab === 'scanner' && canAccessMurid && (
+              <div className="bg-[#0b1d33] border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6">
+                <div>
+                  <div className="flex items-center space-x-2.5 text-amber-400 mb-2">
+                    <ScanLine className="w-5 h-5" />
+                    <span className="text-xs font-bold uppercase tracking-widest bg-amber-400/10 px-2.5 py-1 rounded-full">Satu Titik Akses</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">Scanner Absensi Guru & Murid</h2>
+                  <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+                    Satu kiosk untuk scan kartu QR guru maupun murid — kode discan otomatis dikenali miliknya siapa, tidak perlu buka layar terpisah. Cetak kartu QR guru/murid juga dari sini.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <a
+                    href={`${window.location.origin}${window.location.pathname}#absen-scan`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-400 text-slate-950 font-bold text-sm hover:bg-amber-300 transition-colors"
+                  >
+                    <ScanLine className="w-4 h-4" />
+                    Buka Kiosk Scan (Guru & Murid)
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                  </a>
+                  <a
+                    href={`${window.location.origin}${window.location.pathname}#kartu-barcode-murid`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold text-sm hover:bg-slate-800 transition-colors"
+                  >
+                    <Printer className="w-4 h-4" />
+                    Cetak Kartu QR Murid
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                  </a>
+                  <a
+                    href={`${window.location.origin}${window.location.pathname}#kartu-barcode-guru`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold text-sm hover:bg-slate-800 transition-colors"
+                  >
+                    <Printer className="w-4 h-4" />
+                    Cetak Kartu QR Guru
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                  </a>
+                </div>
+
+                <p className="text-xs text-slate-500">
+                  Pasang tablet/PC di pintu gerbang dengan scanner USB atau kamera HP — buka link kiosk di atas. Hasil scan langsung masuk ke "Absensi Guru Piket" dan "Absensi Murid (Scan)".
+                </p>
+              </div>
+            )}
+
             {/* Absensi Murid — scanner USB + input manual */}
             {dashboardTab === 'murid-attendance' && canAccessMurid && (
               <StudentMuridAttendancePanel
@@ -4597,28 +4670,10 @@ export default function StudentDashboard({
                     </span>
                   </div>
 
-                  {/* Quick actions */}
+                  {/* Quick actions — cetak kartu & buka kiosk scan sudah
+                      dipindah ke menu "SCANNER" (satu titik akses gabungan
+                      guru+murid), jadi tidak diulang di sini lagi. */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    <a
-                      href={`${window.location.origin}${window.location.pathname}#kartu-barcode-guru`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-bold text-slate-300 transition-colors cursor-pointer"
-                    >
-                      <Printer className="w-3.5 h-3.5" />
-                      <span>Cetak Kartu Barcode Guru</span>
-                      <ExternalLink className="w-3 h-3 opacity-70" />
-                    </a>
-                    <a
-                      href={`${window.location.origin}${window.location.pathname}#absen-guru`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-400 text-slate-950 text-xs font-bold hover:bg-amber-300 transition-colors cursor-pointer"
-                    >
-                      <ScanLine className="w-3.5 h-3.5" />
-                      <span>Buka Layar Scanner Guru</span>
-                      <ExternalLink className="w-3 h-3 opacity-70" />
-                    </a>
                     <button
                       onClick={() => {
                         // Mark all as present for selected date (hanya guru yang terjadwal mengajar hari ini)
