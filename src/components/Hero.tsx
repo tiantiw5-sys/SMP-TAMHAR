@@ -34,7 +34,10 @@ export default function Hero({ onHowItWorks }: HeroProps) {
   const showIndependenceOrnaments = isIndependenceMonth();
 
   return (
-    <section id="home" className="relative bg-[#071324] text-white pt-12 pb-24 overflow-hidden">
+    <section
+      id="home"
+      className={`relative text-white pt-12 pb-24 overflow-hidden ${showIndependenceOrnaments ? 'bg-red-950' : 'bg-[#071324]'}`}
+    >
       {/* Ornamen bunting merah-putih — cuma tampil sepanjang Agustus (lihat
           lib/seasonalTheme.ts), otomatis lewat tiap tahun tanpa perlu diubah. */}
       {showIndependenceOrnaments && (
@@ -54,9 +57,21 @@ export default function Hero({ onHowItWorks }: HeroProps) {
         >
           <source src="https://labs.google/fx/api/og-video/shared/6b4363ad-f42a-45a8-b93e-01ce10d847c2" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#071324]/60 via-[#071324]/70 to-[#071324]/95" />
+        {/* Overlay ikut merah pekat saat mode Agustus, supaya nuansa merah-putih
+            terasa sejak Hero (bukan cuma di IndependenceDaySection di bawahnya). */}
+        <div
+          className={
+            showIndependenceOrnaments
+              ? 'absolute inset-0 bg-gradient-to-b from-red-950/60 via-red-950/70 to-red-950/95'
+              : 'absolute inset-0 bg-gradient-to-b from-[#071324]/60 via-[#071324]/70 to-[#071324]/95'
+          }
+        />
       </div>
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div
+        className={`absolute -top-40 -left-40 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
+          showIndependenceOrnaments ? 'bg-red-500/10' : 'bg-blue-500/10'
+        }`}
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
