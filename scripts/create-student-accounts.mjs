@@ -90,7 +90,8 @@ async function findUserIdByEmail(email) {
   });
   const body = await res.json().catch(() => ({}));
   const users = Array.isArray(body) ? body : body?.users;
-  return users?.[0]?.id || null;
+  const matchedUser = users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+  return matchedUser?.id || null;
 }
 
 const results = [];
