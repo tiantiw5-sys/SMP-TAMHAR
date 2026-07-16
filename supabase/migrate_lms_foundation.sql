@@ -153,3 +153,50 @@ $$;
 
 revoke all on function public.get_my_classes() from public, anon;
 grant execute on function public.get_my_classes() to authenticated;
+
+-- ============================================================
+-- PENTING — role 'Siswa' baru di atas TIDAK OTOMATIS aman dari kebijakan
+-- lama yang cuma mengecualikan 'Orang Tua'. Tanpa perbaikan ini, begitu
+-- akun Siswa dibuat (lihat scripts/create-student-accounts.mjs), SETIAP
+-- siswa yang login bisa baca SELURUH roster (students/studentAttendance)
+-- dan SELURUH tabel profiles (nama+email+role+linked_student_id semua
+-- akun, termasuk akun siswa/orang tua lain) — persis kelas kebocoran yang
+-- sudah pernah ditutup khusus untuk 'Orang Tua', sekarang dibuka lagi
+-- lewat role baru ini kalau tidak diperbaiki di sini.
+-- ============================================================
+
+drop policy if exists "portal_collections_staff_select" on public.portal_collections;
+create policy "portal_collections_staff_select"
+  on public.portal_collections for select
+  to authenticated
+  using (
+    collection_key in (
+      'articles', 'gallery', 'teachers', 'uniforms', 'settings', 'visits',
+      'classRoster', 'teachingSchedule'
+    )
+    or (
+      collection_key in ('students', 'studentAttendance')
+      and public.current_role_name() not in ('Orang Tua', 'Siswa')
+    )
+    or (
+      collection_key in ('cash', 'fines', 'logs')
+      and public.current_role_name() in ('Super Admin', 'Managerial OSIS', 'Managerial Sekolah')
+    )
+    or (
+      collection_key in ('attendance', 'teacherAttendanceLog')
+      and public.current_role_name() in ('Super Admin', 'Managerial Sekolah', 'Guru Piket', 'Guru')
+    )
+    or (
+      collection_key in ('notifications', 'annotations')
+      and public.current_role_name() in ('Super Admin', 'Managerial OSIS', 'Managerial Sekolah', 'Guru Piket', 'Guru')
+    )
+  );
+
+drop policy if exists "profiles_select_authenticated" on public.profiles;
+create policy "profiles_select_authenticated"
+  on public.profiles for select
+  to authenticated
+  using (
+    public.current_role_name() not in ('Orang Tua', 'Siswa')
+    or id = auth.uid()
+  );
