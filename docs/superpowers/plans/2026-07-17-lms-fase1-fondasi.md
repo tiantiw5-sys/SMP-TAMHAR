@@ -460,6 +460,22 @@ Invoke-RestMethod -Uri "https://db.smptamhar.com/rest/v1/lms_enrollments?select=
 
 Expected: `[]` juga (RLS `lms_enrollments_select` membatasi ke `student_id = current_linked_student_id()`, dan siswa ini belum punya enrollment — jadi hasilnya kosong, BUKAN error 403, karena select policy-nya memang mengizinkan select dengan filter, hanya baris yang cocok kosong).
 
+Dua cek berikut khusus memverifikasi perbaikan Critical dari review akhir seluruh branch: kebijakan `portal_collections_staff_select` dan `profiles_select_authenticated` di `schema.sql` sebelumnya cuma mengecualikan role `'Orang Tua'`, bukan `'Siswa'` yang baru — jadi tanpa perbaikan di `migrate_lms_foundation.sql`, siswa manapun bisa baca seluruh roster murid dan seluruh tabel `profiles`. Pakai `$studentToken`/`$anonKey` yang sama dari langkah di atas.
+
+```powershell
+# HARUS gagal terlihat sedikit (1 baris, milik sendiri) — BUKAN semua akun
+Invoke-RestMethod -Uri "https://db.smptamhar.com/rest/v1/profiles?select=*" -Method GET -Headers @{ apikey = $anonKey; Authorization = "Bearer $studentToken" }
+```
+
+Expected: **HANYA 1 baris** (baris milik siswa itu sendiri), bukan seluruh tabel `profiles`. Kalau ini mengembalikan lebih dari 1 baris, RLS bocor — JANGAN lanjut ke Fase 2.
+
+```powershell
+# HARUS kosong/ditolak — siswa tidak boleh baca roster mentah
+Invoke-RestMethod -Uri "https://db.smptamhar.com/rest/v1/portal_collections?collection_key=eq.students" -Method GET -Headers @{ apikey = $anonKey; Authorization = "Bearer $studentToken" }
+```
+
+Expected: `[]` (kosong) — siswa tidak boleh bisa menarik koleksi `students` mentah sama sekali. Kalau ini mengembalikan data roster, RLS bocor — JANGAN lanjut ke Fase 2.
+
 - [ ] **Step 5: Catat hasil verifikasi di plan ini**
 
 Centang semua checkbox Task 3 di atas setelah masing-masing expected output cocok. Kalau ada yang tidak cocok, JANGAN lanjut ke Fase 2 — laporkan hasil aktual vs expected untuk didiagnosis dulu.
