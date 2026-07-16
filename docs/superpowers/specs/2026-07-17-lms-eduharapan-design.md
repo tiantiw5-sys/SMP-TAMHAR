@@ -30,6 +30,13 @@ Scope disetujui: **semua bagian** dari prototype (Classroom inti + CBT + AI soal
 
 ## 3. Arsitektur & Data Model
 
+**Topologi deployment (diputuskan 2026-07-17):** LMS "EduHarapan" adalah **landing page/project frontend terpisah** dari `SMP-TAMHAR-new` — polanya sama seperti `beyond-the-stars` (Digital MPLS): repo/subdirektori sendiri, di-deploy ke URL/subdirektori sendiri, punya login page sendiri untuk guru/siswa. Landing page utama SMP-TAMHAR-new cukup dikasih **tombol link** ke LMS, mengikuti pola `DIGITAL_MPLS_URL` yang sudah ada (`src/orgStructure.ts` baca `VITE_DIGITAL_MPLS_URL`, dipakai di `src/components/Hero.tsx`) — nanti dibuat `LMS_URL`/`VITE_LMS_URL` dengan pola identik.
+
+**Bedanya dengan Digital MPLS:** `beyond-the-stars` punya Supabase project sendiri yang terpisah total (project cloud `kpdnsmyudbnnimxlfdav`/"MPLS2026"). LMS **TIDAK** begitu — database-nya **numpang ke instance Supabase self-hosted yang sama** dengan SMP-TAMHAR-new (`db.smptamhar.com`), bukan project baru. Konsekuensinya:
+- Semua skema SQL (tabel `lms_*`, RLS, RPC) tetap ditulis & di-version-control di repo `SMP-TAMHAR-new` (`supabase/migrate_lms_*.sql`) — bukan di repo frontend LMS yang baru. Ini yang membuat Fase 1 (backend murni) tidak berubah oleh keputusan topologi ini.
+- Repo/project frontend LMS yang baru (dibuat mulai Fase 2) cukup mengarahkan `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`-nya ke instance yang sama, memakai role `'Guru'`/`'Siswa'`/`'Super Admin'` dan RLS/RPC yang sudah ada — tidak ada duplikasi skema.
+- Auth (akun guru/siswa) tetap satu sumber kebenaran (`auth.users` + `profiles` di instance yang sama) — akun yang dibuat Fase 1 langsung bisa dipakai login di frontend LMS begitu Fase 2 selesai, tidak perlu akun terpisah.
+
 Tabel baru (skema `public`, mengikuti konvensi Postgres/Supabase project ini — SQL ad-hoc di `supabase/`, bukan folder `migrations/`):
 
 - `lms_classes` — id, name, section, subject, teacher_id (→ profiles), color.
