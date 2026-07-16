@@ -80,6 +80,19 @@ async function updateProfile(userId, patch) {
   return res.status;
 }
 
+async function findUserIdByEmail(email) {
+  const res = await fetch(`${url}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, {
+    method: 'GET',
+    headers: {
+      apikey: serviceRole,
+      Authorization: `Bearer ${serviceRole}`,
+    },
+  });
+  const body = await res.json().catch(() => ({}));
+  const users = Array.isArray(body) ? body : body?.users;
+  return users?.[0]?.id || null;
+}
+
 const results = [];
 
 for (const s of students) {
@@ -93,8 +106,33 @@ for (const s of students) {
 
   if (!userId) {
     if (alreadyExists) {
-      console.log(`LEWATI  ${s.name} (${loginId}) — akun sudah ada dari run sebelumnya.`);
-      results.push({ student: s.name, className: s.className, loginId, password: '(sudah ada — lihat run sebelumnya)', status: 'sudah_ada' });
+      // Akun auth sudah ada dari run sebelumnya — tapi run itu mungkin gagal/terhenti
+      // SEBELUM atau SAAT patch profil (mis. dijalankan sebelum migrasi SQL menambah
+      // role 'Siswa', jadi PATCH-nya 400). Kalau langsung skip di sini tanpa cek ulang,
+      // akun itu diam-diam permanen tanpa role/linked_student_id, dan re-run berikutnya
+      // tetap skip terus. Jadi cari id user yang sudah ada, lalu re-apply updateProfile
+      // (idempotent — PATCH by id) supaya run ini juga MEMPERBAIKI akun yang setengah jadi.
+      const existingId = await findUserIdByEmail(email);
+      if (existingId) {
+        const patchStatus = await updateProfile(existingId, {
+          role: 'Siswa',
+          name: s.name,
+          linked_student_id: s.id,
+          must_change_password: true,
+        });
+        const ok = patchStatus < 300;
+        console.log(`${ok ? 'SUDAH-ADA' : 'SUDAH-ADA (PROFIL-GAGAL)'} ${s.name} (${loginId}) — profil dicek ulang.`);
+        results.push({
+          student: s.name,
+          className: s.className,
+          loginId,
+          password: '(sudah ada — lihat run sebelumnya)',
+          status: ok ? 'sudah_ada_profil_ok' : 'sudah_ada_profil_gagal',
+        });
+      } else {
+        console.log(`LEWATI  ${s.name} (${loginId}) — akun sudah ada tapi id-nya tidak ditemukan lewat lookup email.`);
+        results.push({ student: s.name, className: s.className, loginId, password: '(sudah ada — lookup gagal)', status: 'sudah_ada_lookup_gagal' });
+      }
     } else {
       console.log(`GAGAL   ${s.name} (${loginId}): ${created.body?.msg || created.body?.error_code || created.status}`);
       results.push({ student: s.name, className: s.className, loginId, password: '(GAGAL DIBUAT)', status: 'error' });
