@@ -371,6 +371,14 @@ begin
     raise exception 'attempt_not_in_progress' using errcode = '22023';
   end if;
 
+  if not exists (
+    select 1 from public.lms_exam_attempts a
+    join public.lms_questions q on q.exam_id = a.exam_id
+    where a.id = p_attempt_id and q.id = p_question_id
+  ) then
+    raise exception 'question_not_in_exam' using errcode = '22023';
+  end if;
+
   insert into public.lms_exam_answers (attempt_id, question_id, answer)
   values (p_attempt_id, p_question_id, p_answer)
   on conflict (attempt_id, question_id) do update set answer = excluded.answer;
@@ -407,9 +415,11 @@ begin
 
   select coalesce(sum(q.points), 0) into mc_score
   from public.lms_exam_answers ans
-  join public.lms_questions q on q.id = ans.question_id
+  join public.lms_exam_attempts att on att.id = ans.attempt_id
+  join public.lms_questions q on q.id = ans.question_id and q.exam_id = att.exam_id
   where ans.attempt_id = p_attempt_id
     and q.type = 'mcq'
+    and jsonb_typeof(ans.answer->'option') = 'number'
     and (ans.answer->>'option')::int = q.correct_option;
 
   update public.lms_exam_attempts
