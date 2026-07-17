@@ -276,3 +276,167 @@ create policy "lms_violations_select"
   );
 
 -- TIDAK ADA policy insert langsung — lewat RPC report_violation() (Task 3).
+
+-- Mengembalikan data ujian + daftar soal TANPA correct_option — ini
+-- SATU-SATUNYA cara siswa "membaca" lms_questions. select di dalam RPC
+-- ini SENGAJA menyebutkan kolom satu-satu (bukan select *) supaya
+-- correct_option tidak bisa ikut kebawa kalau kolom baru ditambahkan
+-- ke tabel di masa depan tanpa updateRPC ini.
+create or replace function public.get_my_exam(p_exam_id uuid)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  result jsonb;
+begin
+  if not (public.is_enrolled_in_exam_class(p_exam_id) and public.is_exam_published(p_exam_id)) then
+    raise exception 'exam_not_available' using errcode = '42501';
+  end if;
+
+  select jsonb_build_object(
+    'exam', jsonb_build_object('id', e.id, 'title', e.title, 'duration_minutes', e.duration_minutes),
+    'questions', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id', q.id, 'order_index', q.order_index, 'type', q.type,
+        'text', q.text, 'options', q.options, 'points', q.points
+      ) order by q.order_index)
+      from public.lms_questions q
+      where q.exam_id = e.id
+    ), '[]'::jsonb)
+  ) into result
+  from public.lms_exams e
+  where e.id = p_exam_id;
+
+  return result;
+end;
+$$;
+
+revoke all on function public.get_my_exam(uuid) from public, anon;
+grant execute on function public.get_my_exam(uuid) to authenticated;
+
+-- Idempotent: kalau attempt untuk exam+siswa ini sudah ada, kembalikan
+-- id yang sudah ada (bukan bikin baris baru / error) — supaya refresh
+-- halaman ujian tidak menghasilkan attempt ganda.
+create or replace function public.start_exam_attempt(p_exam_id uuid)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  existing_id uuid;
+  new_id uuid;
+begin
+  if not (public.is_enrolled_in_exam_class(p_exam_id) and public.is_exam_published(p_exam_id)) then
+    raise exception 'exam_not_available' using errcode = '42501';
+  end if;
+
+  select id into existing_id
+  from public.lms_exam_attempts
+  where exam_id = p_exam_id and student_id = auth.uid();
+
+  if existing_id is not null then
+    return existing_id;
+  end if;
+
+  insert into public.lms_exam_attempts (exam_id, student_id)
+  values (p_exam_id, auth.uid())
+  returning id into new_id;
+
+  return new_id;
+end;
+$$;
+
+revoke all on function public.start_exam_attempt(uuid) from public, anon;
+grant execute on function public.start_exam_attempt(uuid) to authenticated;
+
+create or replace function public.submit_exam_answer(p_attempt_id uuid, p_question_id uuid, p_answer jsonb)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  attempt_status text;
+begin
+  if not public.is_own_attempt(p_attempt_id) then
+    raise exception 'insufficient_privilege' using errcode = '42501';
+  end if;
+
+  select status into attempt_status from public.lms_exam_attempts where id = p_attempt_id;
+  if attempt_status <> 'in_progress' then
+    raise exception 'attempt_not_in_progress' using errcode = '22023';
+  end if;
+
+  insert into public.lms_exam_answers (attempt_id, question_id, answer)
+  values (p_attempt_id, p_question_id, p_answer)
+  on conflict (attempt_id, question_id) do update set answer = excluded.answer;
+end;
+$$;
+
+revoke all on function public.submit_exam_answer(uuid, uuid, jsonb) from public, anon;
+grant execute on function public.submit_exam_answer(uuid, uuid, jsonb) to authenticated;
+
+-- Menghitung skor PG otomatis (bandingkan lms_exam_answers.answer->>'option'
+-- dengan lms_questions.correct_option, jumlahkan points soal yang benar).
+-- Soal esai TIDAK ikut dihitung di sini (essay_grade masih NULL sampai
+-- guru menilai manual) — score hasil fungsi ini HANYA total PG, guru
+-- menambah bagian esai belakangan lewat UPDATE lms_exam_attempts.score
+-- (fase frontend berikutnya).
+create or replace function public.submit_exam_attempt(p_attempt_id uuid)
+returns numeric
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  attempt_status text;
+  mc_score numeric;
+begin
+  if not public.is_own_attempt(p_attempt_id) then
+    raise exception 'insufficient_privilege' using errcode = '42501';
+  end if;
+
+  select status into attempt_status from public.lms_exam_attempts where id = p_attempt_id;
+  if attempt_status <> 'in_progress' then
+    raise exception 'attempt_not_in_progress' using errcode = '22023';
+  end if;
+
+  select coalesce(sum(q.points), 0) into mc_score
+  from public.lms_exam_answers ans
+  join public.lms_questions q on q.id = ans.question_id
+  where ans.attempt_id = p_attempt_id
+    and q.type = 'mcq'
+    and (ans.answer->>'option')::int = q.correct_option;
+
+  update public.lms_exam_attempts
+  set status = 'submitted', submitted_at = now(), score = mc_score
+  where id = p_attempt_id;
+
+  return mc_score;
+end;
+$$;
+
+revoke all on function public.submit_exam_attempt(uuid) from public, anon;
+grant execute on function public.submit_exam_attempt(uuid) to authenticated;
+
+create or replace function public.report_violation(p_attempt_id uuid, p_type text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_own_attempt(p_attempt_id) then
+    raise exception 'insufficient_privilege' using errcode = '42501';
+  end if;
+
+  insert into public.lms_violations (attempt_id, type) values (p_attempt_id, p_type);
+end;
+$$;
+
+revoke all on function public.report_violation(uuid, text) from public, anon;
+grant execute on function public.report_violation(uuid, text) to authenticated;
