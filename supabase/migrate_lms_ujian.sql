@@ -141,3 +141,138 @@ create policy "lms_questions_delete"
   on public.lms_questions for delete
   to authenticated
   using (public.current_role_name() = 'Super Admin' or public.is_exam_class_teacher(exam_id));
+
+-- student_id = auth.uid() siswa yang login (uuid), pola sama seperti
+-- lms_submissions.student_id di Fase 2c — BUKAN id blob roster.
+create table if not exists public.lms_exam_attempts (
+  id uuid primary key default gen_random_uuid(),
+  exam_id uuid not null references public.lms_exams(id) on delete cascade,
+  student_id uuid not null references public.profiles(id) on delete cascade,
+  started_at timestamptz not null default now(),
+  submitted_at timestamptz,
+  status text not null default 'in_progress' check (status in ('in_progress', 'submitted', 'graded')),
+  score numeric,
+  unique (exam_id, student_id)
+);
+
+create index if not exists lms_exam_attempts_exam_idx on public.lms_exam_attempts (exam_id);
+create index if not exists lms_exam_attempts_student_idx on public.lms_exam_attempts (student_id);
+
+-- answer: jsonb — {"option": 2} untuk PG (index opsi yang dipilih) atau
+-- {"text": "..."} untuk esai. essay_grade: poin yang diberikan guru untuk
+-- jawaban esai ini secara spesifik (NULL = belum dinilai). Untuk PG,
+-- benar/salahnya dihitung otomatis saat submit (Task 3 RPC), tidak
+-- disimpan sebagai kolom terpisah di sini — cukup dari answer vs
+-- lms_questions.correct_option saat itu.
+create table if not exists public.lms_exam_answers (
+  id uuid primary key default gen_random_uuid(),
+  attempt_id uuid not null references public.lms_exam_attempts(id) on delete cascade,
+  question_id uuid not null references public.lms_questions(id) on delete cascade,
+  answer jsonb not null,
+  essay_grade numeric,
+  unique (attempt_id, question_id)
+);
+
+create index if not exists lms_exam_answers_attempt_idx on public.lms_exam_answers (attempt_id);
+
+create table if not exists public.lms_violations (
+  id uuid primary key default gen_random_uuid(),
+  attempt_id uuid not null references public.lms_exam_attempts(id) on delete cascade,
+  type text not null,
+  occurred_at timestamptz not null default now()
+);
+
+create index if not exists lms_violations_attempt_idx on public.lms_violations (attempt_id);
+
+create or replace function public.is_exam_class_teacher_via_attempt(p_attempt_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.lms_exam_attempts a
+    where a.id = p_attempt_id and public.is_exam_class_teacher(a.exam_id)
+  )
+$$;
+
+revoke all on function public.is_exam_class_teacher_via_attempt(uuid) from public, anon;
+grant execute on function public.is_exam_class_teacher_via_attempt(uuid) to authenticated;
+
+create or replace function public.is_own_attempt(p_attempt_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.lms_exam_attempts a
+    where a.id = p_attempt_id and a.student_id = auth.uid()
+  )
+$$;
+
+revoke all on function public.is_own_attempt(uuid) from public, anon;
+grant execute on function public.is_own_attempt(uuid) to authenticated;
+
+alter table public.lms_exam_attempts enable row level security;
+
+-- SELECT boleh siswa (baris sendiri) supaya frontend bisa cek "apakah
+-- saya sudah attempt ujian ini" tanpa RPC tambahan — ini aman karena
+-- baris attempt sendiri TIDAK mengandung correct_option (itu di
+-- lms_questions, tabel terpisah yang memang tidak bisa diakses siswa).
+drop policy if exists "lms_exam_attempts_select" on public.lms_exam_attempts;
+create policy "lms_exam_attempts_select"
+  on public.lms_exam_attempts for select
+  to authenticated
+  using (
+    public.current_role_name() = 'Super Admin'
+    or public.is_exam_class_teacher(exam_id)
+    or student_id = auth.uid()
+  );
+
+-- TIDAK ADA policy insert/update di sini SENGAJA — pembuatan &
+-- penyelesaian attempt HANYA lewat RPC start_exam_attempt()/
+-- submit_exam_attempt() (Task 3), supaya auto-koreksi PG & validasi
+-- status/kepemilikan terjadi terpusat di server, bukan lewat PATCH
+-- langsung yang bisa dipalsukan klien (mis. siswa set score sendiri).
+
+alter table public.lms_exam_answers enable row level security;
+
+drop policy if exists "lms_exam_answers_select" on public.lms_exam_answers;
+create policy "lms_exam_answers_select"
+  on public.lms_exam_answers for select
+  to authenticated
+  using (
+    public.current_role_name() = 'Super Admin'
+    or public.is_exam_class_teacher_via_attempt(attempt_id)
+    or public.is_own_attempt(attempt_id)
+  );
+
+-- Guru boleh UPDATE (dipakai isi essay_grade) — row-level saja, sama
+-- seperti lms_submissions Fase 2c. Frontend WAJIB cuma kirim
+-- { essay_grade } di body PATCH, tidak pernah kirim ulang `answer`.
+drop policy if exists "lms_exam_answers_update" on public.lms_exam_answers;
+create policy "lms_exam_answers_update"
+  on public.lms_exam_answers for update
+  to authenticated
+  using (public.current_role_name() = 'Super Admin' or public.is_exam_class_teacher_via_attempt(attempt_id))
+  with check (public.current_role_name() = 'Super Admin' or public.is_exam_class_teacher_via_attempt(attempt_id));
+
+-- TIDAK ADA policy insert di sini SENGAJA — cuma lewat RPC
+-- submit_exam_answer() (Task 3), sama alasannya dengan lms_exam_attempts.
+
+alter table public.lms_violations enable row level security;
+
+drop policy if exists "lms_violations_select" on public.lms_violations;
+create policy "lms_violations_select"
+  on public.lms_violations for select
+  to authenticated
+  using (
+    public.current_role_name() = 'Super Admin'
+    or public.is_exam_class_teacher_via_attempt(attempt_id)
+    or public.is_own_attempt(attempt_id)
+  );
+
+-- TIDAK ADA policy insert langsung — lewat RPC report_violation() (Task 3).
