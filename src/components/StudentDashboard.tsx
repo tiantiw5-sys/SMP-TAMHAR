@@ -803,10 +803,9 @@ export default function StudentDashboard({
   const isGuru = currentUser.role === 'Guru';
   const canAccessFinance = currentUser.role === 'Super Admin' || isManagerialOsis;
 
-  // Drag-drop reorder galeri / seragam: update tampilan lokal langsung (biar
-  // terasa responsif), tapi simpan ke server di-debounce — Reorder.Group
-  // memanggil onReorder berkali-kali selagi item digeser, bukan cuma sekali
-  // di akhir. RPC reorder_collection sudah generik (gallery & uniforms OK).
+  // Drag-drop reorder articles / galeri / seragam: update tampilan lokal
+  // langsung, simpan server di-debounce (Reorder.Group fire berkali-kali
+  // saat drag). RPC reorder_collection generik untuk ketiga key.
   const galleryReorderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleGalleryReorder = (newOrder: GalleryItem[]) => {
     setGallery(newOrder);
@@ -821,6 +820,22 @@ export default function StudentDashboard({
     if (uniformsReorderTimer.current) clearTimeout(uniformsReorderTimer.current);
     uniformsReorderTimer.current = setTimeout(() => {
       reorderCollection('uniforms', newOrder.map((u) => u.id));
+    }, 600);
+  };
+  const articlesReorderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // newFilteredOrder = urutan hasil drag di list yang sedang ditampilkan
+  // (bisa terfilter). Item yang tidak ikut filter tetap di posisi aslinya.
+  const handleArticlesReorder = (newFilteredOrder: Article[]) => {
+    const filteredIds = new Set(newFilteredOrder.map((a) => a.id));
+    let i = 0;
+    const next =
+      filterCategory === 'All' && !searchQuery.trim()
+        ? newFilteredOrder
+        : articles.map((a) => (filteredIds.has(a.id) ? newFilteredOrder[i++] : a));
+    setArticles(next);
+    if (articlesReorderTimer.current) clearTimeout(articlesReorderTimer.current);
+    articlesReorderTimer.current = setTimeout(() => {
+      reorderCollection('articles', next.map((a) => a.id));
     }, 600);
   };
   const canAccessAttendance =
@@ -2934,57 +2949,107 @@ export default function StudentDashboard({
                   />
                 </div>
 
-                {/* Table list representation with Edit / Delete actions */}
-                <div className="bg-[#0b1d33] border border-slate-800 rounded-2xl overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs text-slate-300 text-left">
-                      <thead>
-                        <tr className="bg-slate-900/60 border-b border-slate-800 text-slate-400 font-bold">
-                          <th className="p-4">Judul Artikel</th>
-                          <th className="p-4">Kategori</th>
-                          <th className="p-4">Penulis</th>
-                          <th className="p-4">Tanggal</th>
-                          <th className="p-4">Views</th>
-                          <th className="p-4 text-right">Aksi</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800">
-                        {filteredArticles.map((art) => (
-                          <tr key={art.id} className="hover:bg-slate-900/20">
-                            <td className="p-4 font-bold text-white truncate max-w-[220px]">{art.title}</td>
-                            <td className="p-4">
-                              <span className="bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-[10px]">
-                                {art.category}
-                              </span>
-                            </td>
-                            <td className="p-4">{art.author}</td>
-                            <td className="p-4">{art.date}</td>
-                            <td className="p-4">{art.viewsCount} x</td>
-                            <td className="p-4 text-right space-x-2 shrink-0">
-                              <button 
-                                onClick={() => openEditModal('article', art)}
-                                className="p-1.5 hover:bg-slate-800 rounded-lg text-amber-400 hover:text-amber-300 transition-colors cursor-pointer inline-block"
-                                title="Edit"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-                              
-                              {isManagerial && (
-                                <button 
-                                  onClick={() => handleDeleteItem('article', art.id)}
-                                  className="p-1.5 hover:bg-slate-800 rounded-lg text-rose-400 hover:text-rose-300 transition-colors cursor-pointer inline-block"
-                                  title="Hapus"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </td>
+                {isManagerial ? (
+                  <>
+                    <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                      <GripVertical className="w-3.5 h-3.5" />
+                      Tahan ikon di kiri lalu geser naik/turun untuk mengubah urutan tampil di landing page.
+                      {(filterCategory !== 'All' || searchQuery.trim()) && (
+                        <span className="text-amber-500/80"> (filter aktif: hanya item yang tampil yang digeser relatif)</span>
+                      )}
+                    </p>
+                    <Reorder.Group
+                      as="div"
+                      axis="y"
+                      values={filteredArticles}
+                      onReorder={handleArticlesReorder}
+                      className="flex flex-col gap-2"
+                    >
+                      {filteredArticles.map((art) => (
+                        <Reorder.Item
+                          key={art.id}
+                          value={art}
+                          className="relative bg-[#0b1d33] border border-slate-800 rounded-xl overflow-hidden flex items-center gap-3 p-3 cursor-grab active:cursor-grabbing active:z-10 active:shadow-2xl active:shadow-black/50 text-left"
+                        >
+                          <GripVertical className="w-4 h-4 text-slate-500 shrink-0" />
+                          <div className="flex-1 min-w-0 grid grid-cols-1 sm:grid-cols-[1fr_auto_auto_auto] gap-x-4 gap-y-1 items-center">
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-white truncate">{art.title}</p>
+                              <p className="text-[10px] text-slate-500 sm:hidden">{art.author} · {art.date}</p>
+                            </div>
+                            <span className="bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-[10px] text-slate-300 w-fit">
+                              {art.category}
+                            </span>
+                            <span className="hidden sm:inline text-[11px] text-slate-400 truncate max-w-[8rem]">{art.author}</span>
+                            <span className="hidden sm:inline text-[11px] text-slate-500 whitespace-nowrap">{art.date}</span>
+                          </div>
+                          <div className="shrink-0 flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => openEditModal('article', art)}
+                              className="p-1.5 hover:bg-slate-800 rounded-lg text-amber-400 hover:text-amber-300 transition-colors cursor-pointer"
+                              title="Edit"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteItem('article', art.id)}
+                              className="p-1.5 hover:bg-slate-800 rounded-lg text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+                              title="Hapus"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </Reorder.Item>
+                      ))}
+                    </Reorder.Group>
+                    {filteredArticles.length === 0 && (
+                      <p className="text-center text-xs text-slate-500 py-8">Tidak ada artikel yang cocok dengan filter.</p>
+                    )}
+                  </>
+                ) : (
+                  <div className="bg-[#0b1d33] border border-slate-800 rounded-2xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-slate-300 text-left">
+                        <thead>
+                          <tr className="bg-slate-900/60 border-b border-slate-800 text-slate-400 font-bold">
+                            <th className="p-4">Judul Artikel</th>
+                            <th className="p-4">Kategori</th>
+                            <th className="p-4">Penulis</th>
+                            <th className="p-4">Tanggal</th>
+                            <th className="p-4">Views</th>
+                            <th className="p-4 text-right">Aksi</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800">
+                          {filteredArticles.map((art) => (
+                            <tr key={art.id} className="hover:bg-slate-900/20">
+                              <td className="p-4 font-bold text-white truncate max-w-[220px]">{art.title}</td>
+                              <td className="p-4">
+                                <span className="bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-[10px]">
+                                  {art.category}
+                                </span>
+                              </td>
+                              <td className="p-4">{art.author}</td>
+                              <td className="p-4">{art.date}</td>
+                              <td className="p-4">{art.viewsCount} x</td>
+                              <td className="p-4 text-right space-x-2 shrink-0">
+                                <button
+                                  onClick={() => openEditModal('article', art)}
+                                  className="p-1.5 hover:bg-slate-800 rounded-lg text-amber-400 hover:text-amber-300 transition-colors cursor-pointer inline-block"
+                                  title="Edit"
+                                >
+                                  <Edit3 className="w-3.5 h-3.5" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
+                )}
 
               </div>
             )}
