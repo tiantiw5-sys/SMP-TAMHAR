@@ -134,3 +134,8 @@ export const PPDB_FORM_URL = 'https://online.tamhar.sch.id/ticket/#beli';
 export const DIGITAL_MPLS_URL =
   import.meta.env.VITE_DIGITAL_MPLS_URL?.trim() ||
   'https://www.smptamhar.com/mpls/';
+
+/** Star-Learning (LMS) — subpath di Jagoan Hosting. */
+export const STAR_LEARNING_URL =
+  import.meta.env.VITE_STAR_LEARNING_URL?.trim() ||
+  'https://smptamhar.com/lms/';

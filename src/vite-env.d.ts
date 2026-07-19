@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL: string;
   readonly VITE_SUPABASE_ANON_KEY: string;
   readonly VITE_DIGITAL_MPLS_URL?: string;
+  readonly VITE_STAR_LEARNING_URL?: string;
 }
 
 interface ImportMeta {

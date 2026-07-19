@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { ArrowRight, Play, Megaphone, GraduationCap, BookOpen } from 'lucide-react';
+import { ArrowRight, Play, Megaphone, GraduationCap, BookOpen, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import {
   AKREDITASI_IMAGE_URL,
@@ -12,6 +12,7 @@ import {
   PPDB_PROMO_IMAGE_URL,
   PPDB_FORM_URL,
   DIGITAL_MPLS_URL,
+  STAR_LEARNING_URL,
 } from '../orgStructure';
 
 interface HeroProps {
@@ -162,6 +163,19 @@ export default function Hero({ onHowItWorks }: HeroProps) {
                 <GraduationCap className="w-4 h-4 text-emerald-300" />
                 <span>Digital MPLS</span>
                 <ArrowRight className="w-3.5 h-3.5 text-emerald-300" />
+              </a>
+
+              <a
+                href={STAR_LEARNING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 px-5 py-3 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/30 hover:border-sky-400/50 text-sky-200 hover:text-sky-100 transition-all cursor-pointer text-sm font-bold"
+                id="hero-star-learning-btn"
+                title="Star-Learning — LMS SMP Taman Harapan"
+              >
+                <Sparkles className="w-4 h-4 text-sky-300" />
+                <span>StarLearning</span>
+                <ArrowRight className="w-3.5 h-3.5 text-sky-300" />
               </a>
 
               <a
