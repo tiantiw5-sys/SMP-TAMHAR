@@ -25,7 +25,7 @@ export async function signInStaff(
   if (lastError.includes('Invalid login credentials')) {
     return {
       error:
-        'Akun belum ada atau password salah. Buat user di Supabase Dashboard → Authentication → Users (email: superadmin@smptamhar.com, centang Auto Confirm).',
+        'Akun belum ada atau password salah. Hubungi Super Admin jika belum punya akun portal.',
     };
   }
 

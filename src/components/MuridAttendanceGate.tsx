@@ -86,7 +86,7 @@ export default function MuridAttendanceGate(props: Props) {
             Scanner & absensi {label} hanya untuk Super Admin, Manajerial Sekolah, dan Guru Piket.
           </p>
           <p className="text-[10px] text-amber-400/90 max-w-sm mx-auto">
-            Akun belum ada? Supabase Dashboard → Users → tambah superadmin@smptamhar.com (Auto Confirm).
+            Akun belum ada? Hubungi Super Admin untuk dibuatkan akses.
           </p>
         </div>
 
