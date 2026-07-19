@@ -72,10 +72,10 @@ export default defineConfig(({ mode }) => {
             '**/QrCodeBlock-*.js',
           ],
           // Tanpa ini, service worker (scope "/") ikut menangkap navigasi ke
-          // /modul-ajar/ (aplikasi terpisah yang di-hosting di subpath yang
-          // sama) dan malah menyajikan index.html ERP portal yang ke-cache,
-          // bukan konten asli dari server.
-          navigateFallbackDenylist: [/^\/modul-ajar\//],
+          // /modul-ajar/ dan /mpls/ (aplikasi terpisah yang di-hosting di
+          // subpath yang sama) dan malah menyajikan index.html ERP portal
+          // yang ke-cache, bukan konten asli dari server.
+          navigateFallbackDenylist: [/^\/modul-ajar(\/|$)/, /^\/mpls(\/|$)/],
           runtimeCaching: [
             {
               urlPattern: /^https:\/\/lh3\.googleusercontent\.com\/.*/i,

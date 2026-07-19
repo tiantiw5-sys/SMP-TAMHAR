@@ -8,6 +8,14 @@
   RewriteCond %{HTTPS} off
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+  # Redirect www -> non-www (canonical). PENTING: sesi login (Supabase auth
+  # di localStorage) itu per-origin persis, dan semua link ke sub-app
+  # (/modul-ajar/, /mpls/) di kode hardcode ke https://smptamhar.com TANPA
+  # www — kalau user login lewat www.smptamhar.com, sesinya tidak pernah
+  # kebawa ke sub-app itu (selalu "Akses Ditolak" meski sudah login).
+  RewriteCond %{HTTP_HOST} ^www\.smptamhar\.com$ [NC]
+  RewriteRule ^ https://smptamhar.com%{REQUEST_URI} [L,R=301]
+
   # SPA fallback — semua alamat yang bukan file/folder asli dilayani oleh
   # index.html yang sama (portal ini satu halaman, navigasinya pakai #hash).
   RewriteCond %{REQUEST_FILENAME} !-f

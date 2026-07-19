@@ -133,4 +133,4 @@ export const PPDB_FORM_URL = 'https://online.tamhar.sch.id/ticket/#beli';
 
 export const DIGITAL_MPLS_URL =
   import.meta.env.VITE_DIGITAL_MPLS_URL?.trim() ||
-  'https://mellifluous-duckanoo-1504ac.netlify.app/';
+  'https://www.smptamhar.com/mpls/';

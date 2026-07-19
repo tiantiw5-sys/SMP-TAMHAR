@@ -1019,9 +1019,19 @@ export const loadPortalDataFromSupabase = async (opts?: { isLoggedIn?: boolean }
 
   const allowSeed =
     import.meta.env.DEV || import.meta.env.VITE_ALLOW_SEED === 'true';
+  // Koleksi yang RLS-nya membatasi SELECT ke staf terautentikasi saja
+  // (lihat portal_collections_staff_select di schema.sql) — untuk sesi
+  // anon/belum login, "tidak ketemu di hasil query" di sini berarti
+  // "disembunyikan RLS", BUKAN "belum ada baris di database". Kalau
+  // dianggap kosong lalu di-seed, upsert-nya bakal ditolak RLS juga
+  // (anon/role tanpa akses tidak boleh insert) — cuma jadi console.error
+  // percuma tiap pengunjung anonim buka halaman.
   const sensitiveKeys = new Set<PortalCollectionKey>([
     'students',
     'attendance',
+    'notifications',
+    'annotations',
+    'teachingSchedule',
   ]);
 
   const seedTasks: Promise<void>[] = [];

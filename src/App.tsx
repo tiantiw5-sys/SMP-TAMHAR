@@ -7,7 +7,7 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { 
   ArrowRight, Check, Star, BookOpen, Heart, 
   Sparkles, Mail, Lock, X, CheckCircle2, ChevronRight, 
-  Eye, Calendar, Users, Award, Shield, FileText, Download, Bell, 
+  Eye, EyeOff, Calendar, Users, Award, Shield, FileText, Download, Bell,
   LayoutDashboard, LogOut, Compass, MapPin, Phone, Globe, Play,
   Send, User, LockKeyhole, FileImage, Shirt
 } from 'lucide-react';
@@ -49,6 +49,7 @@ import { formatWhatsAppUrl, validatePasswordStrength } from './auth';
 import { NAV_ITEMS } from './constants';
 import { isSupabaseEnabled, getSupabase } from './lib/supabase';
 import { signInStaff } from './lib/staffAuth';
+import { clearLockout, formatLockoutCountdown, getLockoutRemainingSeconds, recordFailedAttempt } from './lib/loginLockout';
 import { canAccessMuridAttendance } from './lib/roleAccess';
 import {
   loadPortalDataFromLocalStorage,
@@ -164,6 +165,21 @@ export default function App() {
   // Login input states
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginFormError, setLoginFormError] = useState<string | null>(null);
+  const [loginLockedSeconds, setLoginLockedSeconds] = useState(0);
+
+  useEffect(() => {
+    setLoginLockedSeconds(getLockoutRemainingSeconds(loginEmail));
+  }, [loginEmail]);
+
+  useEffect(() => {
+    if (loginLockedSeconds <= 0) return;
+    const timer = setInterval(() => {
+      setLoginLockedSeconds(getLockoutRemainingSeconds(loginEmail));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [loginLockedSeconds, loginEmail]);
 
   // PPDB Interest Form states
   const [ppdbStudentName, setPpdbStudentName] = useState('');
@@ -739,6 +755,7 @@ export default function App() {
   // Auth Handlers
   const handleLoginClick = () => {
     setAuthMode('login');
+    setLoginFormError(null);
     setIsAuthModalOpen(true);
   };
 
@@ -762,25 +779,40 @@ export default function App() {
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginFormError(null);
+
+    const stillLocked = getLockoutRemainingSeconds(loginEmail);
+    if (stillLocked > 0) {
+      setLoginLockedSeconds(stillLocked);
+      return;
+    }
 
     const supabase = getSupabase();
     if (!supabase) {
-      setAlertMsg({ type: 'error', text: 'Portal login belum terhubung ke server.' });
+      setLoginFormError('Portal login belum terhubung ke server.');
       return;
     }
 
     const signedIn = await signInStaff(supabase, loginEmail, loginPassword);
     if ('error' in signedIn) {
-      setAlertMsg({ type: 'error', text: signedIn.error });
+      const justLockedFor = recordFailedAttempt(loginEmail);
+      if (justLockedFor > 0) {
+        setLoginLockedSeconds(justLockedFor);
+        setLoginFormError(`Terlalu banyak percobaan gagal. Coba lagi dalam ${formatLockoutCountdown(justLockedFor)}.`);
+      } else {
+        setLoginFormError(signedIn.error);
+      }
       return;
     }
 
     const profile = await fetchProfile(signedIn.user);
     if (!profile) {
-      setAlertMsg({ type: 'error', text: 'Akun ditemukan tapi profil belum diatur. Hubungi Super Admin.' });
+      setLoginFormError('Akun ditemukan tapi profil belum diatur. Hubungi Super Admin.');
       await supabase.auth.signOut();
       return;
     }
+
+    clearLockout(loginEmail);
 
     if (profile.mustChangePassword) {
       setPasswordChangeUser(profile);
@@ -796,6 +828,13 @@ export default function App() {
     e.preventDefault();
     setMuridGateError(null);
 
+    const stillLocked = getLockoutRemainingSeconds(loginEmail);
+    if (stillLocked > 0) {
+      setLoginLockedSeconds(stillLocked);
+      setMuridGateError(`Terlalu banyak percobaan gagal. Coba lagi dalam ${formatLockoutCountdown(stillLocked)}.`);
+      return;
+    }
+
     const supabase = getSupabase();
     if (!supabase) {
       setMuridGateError('Portal belum terhubung ke server.');
@@ -804,7 +843,13 @@ export default function App() {
 
     const signedIn = await signInStaff(supabase, loginEmail, loginPassword);
     if ('error' in signedIn) {
-      setMuridGateError(signedIn.error);
+      const justLockedFor = recordFailedAttempt(loginEmail);
+      if (justLockedFor > 0) {
+        setLoginLockedSeconds(justLockedFor);
+        setMuridGateError(`Terlalu banyak percobaan gagal. Coba lagi dalam ${formatLockoutCountdown(justLockedFor)}.`);
+      } else {
+        setMuridGateError(signedIn.error);
+      }
       return;
     }
 
@@ -820,6 +865,8 @@ export default function App() {
       await supabase.auth.signOut();
       return;
     }
+
+    clearLockout(loginEmail);
 
     if (profile.mustChangePassword) {
       setPasswordChangeUser(profile);
@@ -1724,7 +1771,10 @@ export default function App() {
             >
               {/* Close Button */}
               <button
-                onClick={() => setIsAuthModalOpen(false)}
+                onClick={() => {
+                  setIsAuthModalOpen(false);
+                  setLoginFormError(null);
+                }}
                 className="absolute top-5 right-5 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer border border-transparent"
               >
                 <X className="w-5 h-5" />
@@ -1774,21 +1824,38 @@ export default function App() {
                       <div className="relative">
                         <Lock className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
                         <input
-                          type="password"
+                          type={showLoginPassword ? 'text' : 'password'}
                           required
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
                           placeholder="••••••••"
-                          className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-amber-400 font-medium text-white"
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-11 pr-11 py-3 text-sm focus:outline-none focus:border-amber-400 font-medium text-white"
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowLoginPassword((v) => !v)}
+                          className="absolute right-4 top-3.5 text-slate-400 hover:text-amber-400"
+                          aria-label={showLoginPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                        >
+                          {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
                       </div>
                     </div>
 
+                    {loginFormError && (
+                      <p className="text-xs text-rose-400 bg-rose-400/10 border border-rose-900/50 rounded-lg px-3 py-2">
+                        {loginFormError}
+                      </p>
+                    )}
+
                     <button
                       type="submit"
-                      className="w-full bg-amber-400 hover:bg-amber-350 text-slate-950 font-bold py-3.5 rounded-xl text-sm transition-all shadow-md hover:shadow-lg text-center cursor-pointer"
+                      disabled={loginLockedSeconds > 0}
+                      className="w-full bg-amber-400 hover:bg-amber-350 text-slate-950 font-bold py-3.5 rounded-xl text-sm transition-all shadow-md hover:shadow-lg text-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Masuk & Buka Dashboard ERP
+                      {loginLockedSeconds > 0
+                        ? `Terkunci (${formatLockoutCountdown(loginLockedSeconds)})`
+                        : 'Masuk & Buka Dashboard ERP'}
                     </button>
                   </form>
                 ) : (
