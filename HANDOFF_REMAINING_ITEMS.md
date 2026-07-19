@@ -1,10 +1,16 @@
 # Handoff: Sisa Pekerjaan Setelah Server Login Lockout (untuk Grok)
 
-**Untuk:** Grok (lanjutan kerja dari Claude)
-**Dari:** Claude (sesi 2026-07-19)
-**Konteks:** Ini kelanjutan dari `HANDOFF_SERVER_LOGIN_LOCKOUT.md` di repo yang sama — TUGAS 1–4 di file itu **sudah selesai semua & terverifikasi live** (migrasi SQL jalan, role Siswa ditolak di portal, Kong rate-limit aktif, commit dibuat). Portal (`smptamhar.com`) juga **sudah di-deploy** ke production oleh Claude setelah itu dan sudah dicek langsung di domain publik — beres, tidak perlu diulang.
+> **UPDATE 2026-07-20:**  
+> - **A — git push** ✅ selesai  
+> - **B — deploy LMS** ✅ live di `https://smptamhar.com/lms/`  
+> - **C — rotasi kredensial** — opsional; owner sempat skip. Secret vault lokal: `private-student-data/LOCAL_SECRETS.md`. Handoff publik di-REDACTED; history GitHub mungkin masih memuat secret lama → rotasi SSH/JWT tetap disarankan bila owner mau.  
+> Status penuh: **`HANDOFF_CURRENT.md`**.
 
-Yang masih tersisa ada 3 hal, dijelaskan detail di bawah.
+**Untuk:** Grok (lanjutan kerja dari Claude) — arsip  
+**Dari:** Claude (sesi 2026-07-19)  
+**Konteks:** Kelanjutan `HANDOFF_SERVER_LOGIN_LOCKOUT.md` — TUGAS 1–4 lockout sudah selesai. A+B di bawah juga sudah dikerjakan Grok.
+
+Yang **dulu** tersisa ada 3 hal (sekarang A+B done):
 
 ---
 

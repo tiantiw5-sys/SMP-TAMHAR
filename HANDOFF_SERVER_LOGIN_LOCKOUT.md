@@ -1,8 +1,12 @@
 # Handoff: Server-side Login Lockout + Role Split (Siswa vs Guru) + Rate Limiting Infra
 
-**Untuk:** Grok (lanjutan kerja dari Claude)
-**Dari:** Claude (sesi 2026-07-19)
-**Repo:** `SMP-TAMHAR-new` (portal ERP, smptamhar.com) + `SMP-TAMHAR-LMS` (Star-Learning, LMS TKA) — dua repo terpisah tapi berbagi SATU database self-hosted Supabase.
+> **UPDATE 2026-07-20:** TUGAS 1–4 di dokumen ini **SUDAH SELESAI**.  
+> Status terkini + residual: **`HANDOFF_CURRENT.md`**.  
+> Kredensial: **`private-student-data/LOCAL_SECRETS.md`** (gitignored) — jangan taruh secret di file ini.
+
+**Untuk:** Grok (lanjutan kerja dari Claude) — arsip spesifikasi  
+**Dari:** Claude (sesi 2026-07-19)  
+**Repo:** `SMP-TAMHAR-new` (portal ERP, smptamhar.com) + `SMP-TAMHAR-LMS` (Star-Learning, LMS TKA) — dua repo terpisah tapi berbagi SATU database self-hosted Supabase.  
 **DB:** `https://db.smptamhar.com` (self-hosted Supabase di VPS Sumopod)
 
 ---

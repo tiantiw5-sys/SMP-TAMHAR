@@ -1,8 +1,11 @@
 # Handoff: Migrasi SQL `reorder_collection` (untuk Grok)
 
-**Untuk:** Grok (lanjutan kerja dari Claude)
-**Dari:** Claude (sesi 2026-07-20)
-**Konteks:** Fitur baru — admin (Super Admin/Managerial OSIS/Managerial Sekolah) sekarang bisa drag-drop mengubah urutan tampil di **Dokumentasi Galeri** (tab "Galeri" di dashboard ERP portal). Kode frontend **sudah selesai, sudah di-deploy live** ke `smptamhar.com` (bundle `index-CIzpyrWc.js`). Yang kurang cuma **satu migrasi SQL** — tanpa ini, urutan hasil drag akan reset lagi tiap reload halaman (browser masih nyimpen state lokal, tapi belum ada RPC di server buat nyimpen permanen).
+> **UPDATE 2026-07-20:** Migrasi **SUDAH APPLIED** ke DB produksi. Drag juga sudah ada di **Seragam** + **Artikel**.  
+> Lihat **`HANDOFF_CURRENT.md`** §6. Jangan jalankan ulang kecuali SQL berubah.
+
+**Untuk:** Grok (lanjutan kerja dari Claude) — arsip  
+**Dari:** Claude (sesi 2026-07-20)  
+**Konteks (asli):** Fitur drag-drop urutan **Dokumentasi Galeri**. Frontend sudah live; migrasi SQL dulu menunggu Grok — **sekarang beres**.
 
 ## TUGAS (satu-satunya, sederhana)
 
