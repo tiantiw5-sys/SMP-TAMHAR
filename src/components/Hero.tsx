@@ -184,7 +184,7 @@ export default function Hero({ onHowItWorks }: HeroProps) {
                 id="hero-pelajaran-btn"
               >
                 <BookOpen className="w-4 h-4 text-violet-300" />
-                <span>Mata Pelajaran</span>
+                <span>Jadwal Mata Pelajaran</span>
               </a>
             </motion.div>
 
