@@ -19,3 +19,7 @@ supabase/.temp/
 
 # Workspace git worktree lokal (subagent-driven-development, dsb).
 .worktrees/
+
+# Local agent memory / secrets (never publish)
+.grok/
+
