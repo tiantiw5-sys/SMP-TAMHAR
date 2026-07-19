@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   BarChart3, FileText, FileImage, Users, User, Shield, 
   Settings, Key, Trash2, Plus, Edit3, Download, LogOut, 
@@ -11,7 +11,7 @@ import {
   Sparkles, Filter, X, ArrowUpRight, Search, Menu,
   Globe, MapPin, Activity, Wifi, Clock, Link2, RefreshCw,
   LayoutDashboard as LayoutDashboardIcon, ChevronUp, ChevronDown,
-  Printer, ScanLine, ExternalLink
+  Printer, ScanLine, ExternalLink, GripVertical
 } from 'lucide-react';
 import {
   Article, GalleryItem, Teacher, Uniform, CashTransaction,
@@ -20,9 +20,9 @@ import {
   ClassRosterEntry, ClassRosterStudent, TeachingScheduleDay, TeachingScheduleSlot, TeacherAttendanceRecord,
 } from '../types';
 import StudentMuridAttendancePanel from './StudentMuridAttendancePanel';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, Reorder } from 'motion/react';
 import type { AttendanceMap } from '../lib/portalDb';
-import { appendToCollection, updateCollectionItem, deleteCollectionItem, fetchCollectionRow, fetchStudentAttendance, upsertCashTransaction, deleteCashTransaction, upsertFineTransaction, deleteFineTransaction, mergeById, removeById, upsertTeacherAttendance, deleteTeacherAttendanceForDate } from '../lib/portalDb';
+import { appendToCollection, updateCollectionItem, deleteCollectionItem, reorderCollection, fetchCollectionRow, fetchStudentAttendance, upsertCashTransaction, deleteCashTransaction, upsertFineTransaction, deleteFineTransaction, mergeById, removeById, upsertTeacherAttendance, deleteTeacherAttendanceForDate } from '../lib/portalDb';
 import { normalizeImageUrl } from '../lib/imageUrl';
 import { validatePasswordStrength } from '../auth';
 import { getSupabase, createSignupOnlyClient } from '../lib/supabase';
@@ -802,6 +802,27 @@ export default function StudentDashboard({
   const isGuruPiket = currentUser.role === 'Guru Piket';
   const isGuru = currentUser.role === 'Guru';
   const canAccessFinance = currentUser.role === 'Super Admin' || isManagerialOsis;
+
+  // Drag-drop reorder galeri / seragam: update tampilan lokal langsung (biar
+  // terasa responsif), tapi simpan ke server di-debounce — Reorder.Group
+  // memanggil onReorder berkali-kali selagi item digeser, bukan cuma sekali
+  // di akhir. RPC reorder_collection sudah generik (gallery & uniforms OK).
+  const galleryReorderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleGalleryReorder = (newOrder: GalleryItem[]) => {
+    setGallery(newOrder);
+    if (galleryReorderTimer.current) clearTimeout(galleryReorderTimer.current);
+    galleryReorderTimer.current = setTimeout(() => {
+      reorderCollection('gallery', newOrder.map((g) => g.id));
+    }, 600);
+  };
+  const uniformsReorderTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleUniformsReorder = (newOrder: Uniform[]) => {
+    setUniforms(newOrder);
+    if (uniformsReorderTimer.current) clearTimeout(uniformsReorderTimer.current);
+    uniformsReorderTimer.current = setTimeout(() => {
+      reorderCollection('uniforms', newOrder.map((u) => u.id));
+    }, 600);
+  };
   const canAccessAttendance =
     currentUser.role === 'Super Admin' ||
     currentUser.role === 'Managerial Sekolah' ||
@@ -2010,18 +2031,18 @@ export default function StudentDashboard({
       {/* Main Grid Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
         
-        {/* Dynamic Alerts */}
+        {/* Dynamic Alerts — fixed toast, z-[100] agar tetap terlihat di atas modal (z-50) */}
         <AnimatePresence>
           {dashAlert && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-6 overflow-hidden"
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-4"
             >
-              <div className={`p-4 rounded-xl border flex items-center space-x-3 text-xs font-bold ${
-                dashAlert.type === 'success' 
-                  ? 'bg-[#0f2d4e] border-amber-400 text-white' 
+              <div className={`p-4 rounded-xl border flex items-center space-x-3 text-xs font-bold shadow-2xl ${
+                dashAlert.type === 'success'
+                  ? 'bg-[#0f2d4e] border-amber-400 text-white'
                   : 'bg-rose-950/40 border-rose-500 text-rose-200'
               }`}>
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
@@ -2987,29 +3008,62 @@ export default function StudentDashboard({
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {gallery.map((g) => (
-                    <div key={g.id} className="bg-[#0b1d33] border border-slate-800 rounded-2xl overflow-hidden text-left flex flex-col justify-between">
-                      <div className="relative aspect-[4/3] bg-slate-900">
-                        <img src={g.url} alt={g.caption} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                        <span className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white px-2 py-0.5 rounded text-[9px] font-bold uppercase">
-                          {g.type}
-                        </span>
-                      </div>
-                      <div className="p-4 space-y-2">
-                        <span className="text-[10px] text-amber-400 uppercase font-black tracking-wider block">{g.album}</span>
-                        <p className="text-xs text-white font-bold leading-snug line-clamp-2">{g.caption}</p>
-                        
-                        {isManagerial && (
-                          <div className="pt-3 border-t border-slate-800 flex justify-end space-x-2">
+                {isManagerial ? (
+                  <>
+                    <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                      <GripVertical className="w-3.5 h-3.5" />
+                      Tahan ikon di kiri lalu geser naik/turun untuk mengubah urutan tampil di landing page.
+                    </p>
+                    <Reorder.Group
+                      as="div"
+                      axis="y"
+                      values={gallery}
+                      onReorder={handleGalleryReorder}
+                      className="flex flex-col gap-3"
+                    >
+                      {gallery.map((g) => (
+                        <Reorder.Item
+                          key={g.id}
+                          value={g}
+                          className="relative bg-[#0b1d33] border border-slate-800 rounded-2xl overflow-hidden flex items-center gap-4 p-3 cursor-grab active:cursor-grabbing active:z-10 active:shadow-2xl active:shadow-black/50"
+                        >
+                          <GripVertical className="w-4 h-4 text-slate-500 shrink-0" />
+                          <div className="relative w-20 h-16 sm:w-28 sm:h-20 shrink-0 rounded-lg overflow-hidden bg-slate-900">
+                            <img src={g.url} alt={g.caption} className="w-full h-full object-cover pointer-events-none" referrerPolicy="no-referrer" />
+                            <span className="absolute top-1 left-1 bg-slate-900/80 backdrop-blur-md text-white px-1.5 py-0.5 rounded text-[8px] font-bold uppercase">
+                              {g.type}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[10px] text-amber-400 uppercase font-black tracking-wider block">{g.album}</span>
+                            <p className="text-xs text-white font-bold leading-snug truncate">{g.caption}</p>
+                          </div>
+                          <div className="shrink-0 flex items-center gap-3">
                             <button onClick={() => openEditModal('gallery', g)} className="text-xs text-amber-400 hover:underline">Edit</button>
                             <button onClick={() => handleDeleteItem('gallery', g.id)} className="text-xs text-rose-400 hover:underline">Hapus</button>
                           </div>
-                        )}
+                        </Reorder.Item>
+                      ))}
+                    </Reorder.Group>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {gallery.map((g) => (
+                      <div key={g.id} className="bg-[#0b1d33] border border-slate-800 rounded-2xl overflow-hidden text-left flex flex-col justify-between">
+                        <div className="relative aspect-[4/3] bg-slate-900">
+                          <img src={g.url} alt={g.caption} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          <span className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white px-2 py-0.5 rounded text-[9px] font-bold uppercase">
+                            {g.type}
+                          </span>
+                        </div>
+                        <div className="p-4 space-y-2">
+                          <span className="text-[10px] text-amber-400 uppercase font-black tracking-wider block">{g.album}</span>
+                          <p className="text-xs text-white font-bold leading-snug line-clamp-2">{g.caption}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -3708,7 +3762,7 @@ export default function StudentDashboard({
                 <div className="flex items-center justify-between bg-[#0b1d33] border border-slate-800 p-5 rounded-2xl">
                   <div>
                     <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">Jadwal & Aturan Seragam Siswa</h3>
-                    <p className="text-xs text-slate-400">Ketentuan pakaian harian sekolah.</p>
+                    <p className="text-xs text-slate-400">Ketentuan pakaian harian sekolah. Total {uniforms.length} item.</p>
                   </div>
                   {isSuperAdmin && (
                     <button
@@ -3721,29 +3775,64 @@ export default function StudentDashboard({
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {uniforms.map((un) => (
-                    <div key={un.id} className="bg-[#0b1d33] border border-slate-800 rounded-xl p-5 flex space-x-4 items-start text-left">
-                      <div className="w-20 h-20 rounded-lg overflow-hidden bg-slate-900 shrink-0">
-                        <img src={un.image} alt={un.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                      </div>
-                      <div className="space-y-1.5 flex-grow">
-                        <span className="text-[9px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded font-black uppercase">
-                          {un.days}
-                        </span>
-                        <h4 className="text-xs font-bold text-white mt-1">{un.name}</h4>
-                        <p className="text-[11px] text-slate-400 leading-relaxed font-sans">{un.description}</p>
-                        
-                        {isSuperAdmin && (
-                          <div className="pt-2 flex space-x-3 text-[10px]">
-                            <button onClick={() => openEditModal('uniform', un)} className="text-amber-400 hover:underline">Edit</button>
-                            <button onClick={() => handleDeleteItem('uniform', un.id)} className="text-rose-400 hover:underline">Hapus</button>
+                {isManagerial ? (
+                  <>
+                    <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                      <GripVertical className="w-3.5 h-3.5" />
+                      Tahan ikon di kiri lalu geser naik/turun untuk mengubah urutan tampil di landing page.
+                    </p>
+                    <Reorder.Group
+                      as="div"
+                      axis="y"
+                      values={uniforms}
+                      onReorder={handleUniformsReorder}
+                      className="flex flex-col gap-3"
+                    >
+                      {uniforms.map((un) => (
+                        <Reorder.Item
+                          key={un.id}
+                          value={un}
+                          className="relative bg-[#0b1d33] border border-slate-800 rounded-xl overflow-hidden flex items-center gap-4 p-4 cursor-grab active:cursor-grabbing active:z-10 active:shadow-2xl active:shadow-black/50 text-left"
+                        >
+                          <GripVertical className="w-4 h-4 text-slate-500 shrink-0" />
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden bg-slate-900 shrink-0">
+                            <img src={un.image} alt={un.name} className="w-full h-full object-cover pointer-events-none" referrerPolicy="no-referrer" />
                           </div>
-                        )}
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <span className="text-[9px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded font-black uppercase inline-block">
+                              {un.days}
+                            </span>
+                            <h4 className="text-xs font-bold text-white truncate">{un.name}</h4>
+                            <p className="text-[11px] text-slate-400 leading-relaxed font-sans line-clamp-2">{un.description}</p>
+                          </div>
+                          {isSuperAdmin && (
+                            <div className="shrink-0 flex items-center gap-3">
+                              <button type="button" onClick={() => openEditModal('uniform', un)} className="text-xs text-amber-400 hover:underline">Edit</button>
+                              <button type="button" onClick={() => handleDeleteItem('uniform', un.id)} className="text-xs text-rose-400 hover:underline">Hapus</button>
+                            </div>
+                          )}
+                        </Reorder.Item>
+                      ))}
+                    </Reorder.Group>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {uniforms.map((un) => (
+                      <div key={un.id} className="bg-[#0b1d33] border border-slate-800 rounded-xl p-5 flex space-x-4 items-start text-left">
+                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-slate-900 shrink-0">
+                          <img src={un.image} alt={un.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                        </div>
+                        <div className="space-y-1.5 flex-grow">
+                          <span className="text-[9px] bg-amber-400 text-slate-950 px-2 py-0.5 rounded font-black uppercase">
+                            {un.days}
+                          </span>
+                          <h4 className="text-xs font-bold text-white mt-1">{un.name}</h4>
+                          <p className="text-[11px] text-slate-400 leading-relaxed font-sans">{un.description}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
