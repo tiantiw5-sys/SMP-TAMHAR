@@ -475,11 +475,11 @@ export const INITIAL_COURSES = []; // keeping empty to bypass course compiler if
 // sampai admin mengisinya lewat dashboard atau Supabase diisi manual.
 export const INITIAL_CLASS_ROSTER: ClassRosterEntry[] = [];
 
-// Jadwal Mengajar (KBM) T1 2026/2027 — diresolusi dari kode guru di
-// dokumen "PEMBAGIAN TUGAS GURU 2627 - T1-Sementara" ke nama asli, supaya
-// tampilan dashboard langsung menunjukkan nama guru, bukan kode mentah.
-// Kode 21/22/23 ("IPA 1"/"B. Inggris 1"/"Native Speaker") adalah slot
-// mengajar cadangan/bilingual yang belum diisi guru tetap, bukan nama orang.
+// Jadwal Mengajar (KBM) T2 2026/2027 — diresolusi dari kode guru di
+// dokumen "JADWAL KBM T2 - 2026-2027" + "PEMBAGIAN TUGAS GURU 2627 - 17
+// Juli 26" (KODE DAN NAMA GURU, hal. 3) ke nama asli, supaya tampilan
+// dashboard langsung menunjukkan nama guru, bukan kode mentah. Menggantikan
+// jadwal T1 sebelumnya untuk kelima hari (Senin-Jumat).
 export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
   {
     "day": "Senin",
@@ -494,28 +494,28 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "1",
         "time": "07.40 - 08.15",
         "classes": {
-          "7A": "Ust. Ahmad Zen Syukrillah",
-          "8A": "Fitri Khoiriyah, S.Pd.I",
-          "8B": "Tristian Novansyah, S.Kom",
-          "9A": "Febriantika Putri Pangesti, S.Pd",
-          "9B": "Shinta Handayani, S.Pd",
-          "7B": "Admiri, S.Ag",
-          "8C": "Abdul Rosyid, S.Pd.I",
-          "9C": "Dra. Hj. Sudarti"
+          "7A": "Dra. Hj. Sudarti",
+          "8A": "Abdul Rosyid, S.Pd.I",
+          "8B": "Fitri Khoiriyah, S.Pd.I",
+          "9A": "Ust. Ahmad Zen Syukrillah",
+          "9B": "Admiri, S.Ag",
+          "7B": "Febriantika Putri Pangesti, S.Pd",
+          "8C": "Tristian Novansyah, S.Kom",
+          "9C": "Shinta Handayani, S.Pd"
         }
       },
       {
         "period": "2",
         "time": "08.15 - 08.50",
         "classes": {
-          "7A": "Ust. Ahmad Zen Syukrillah",
-          "8A": "Fitri Khoiriyah, S.Pd.I",
+          "7A": "Dra. Hj. Sudarti",
+          "8A": "Abdul Rosyid, S.Pd.I",
           "8B": "Hj. Siti Wahyuni",
-          "9A": "Febriantika Putri Pangesti, S.Pd",
-          "9B": "Shinta Handayani, S.Pd",
-          "7B": "Admiri, S.Ag",
-          "8C": "Abdul Rosyid, S.Pd.I",
-          "9C": "Dra. Hj. Sudarti"
+          "9A": "Ust. Ahmad Zen Syukrillah",
+          "9B": "Ida Farida, S.Pd",
+          "7B": "Febriantika Putri Pangesti, S.Pd",
+          "8C": "Tristian Novansyah, S.Kom",
+          "9C": "Shinta Handayani, S.Pd"
         }
       },
       {
@@ -523,12 +523,12 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "time": "08.50 - 09.25",
         "classes": {
           "7A": "Admiri, S.Ag",
-          "8A": "Febriantika Putri Pangesti, S.Pd",
+          "8A": "Dra. Hj. Sudarti",
           "8B": "Hj. Siti Wahyuni",
-          "9A": "Tristian Novansyah, S.Kom",
+          "9A": "Fitri Khoiriyah, S.Pd.I",
           "9B": "Ida Farida, S.Pd",
           "7B": "Shinta Handayani, S.Pd",
-          "8C": "Fitri Khoiriyah, S.Pd.I",
+          "8C": "Febriantika Putri Pangesti, S.Pd",
           "9C": "Mugi Raharjo, SE"
         }
       },
@@ -537,19 +537,19 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "time": "09.25 - 10.00",
         "classes": {
           "7A": "Admiri, S.Ag",
-          "8A": "Febriantika Putri Pangesti, S.Pd",
-          "8B": "Abdul Rosyid, S.Pd.I",
+          "8A": "Dra. Hj. Sudarti",
+          "8B": "Febriantika Putri Pangesti, S.Pd",
           "9A": "Tristian Novansyah, S.Kom",
           "9B": "Ida Farida, S.Pd",
           "7B": "Shinta Handayani, S.Pd",
-          "8C": "Fitri Khoiriyah, S.Pd.I",
+          "8C": "Hj. Siti Wahyuni",
           "9C": "Mugi Raharjo, SE"
         }
       },
       {
         "period": "dhuha",
         "time": "10.00 - 10.25",
-        "activity": "Sholat Dhuha"
+        "activity": "Sholat Dhuha - Murajaah - TBA"
       },
       {
         "period": "rest1",
@@ -560,13 +560,13 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "5",
         "time": "10.55 - 11.30",
         "classes": {
-          "7A": "Ida Farida, S.Pd",
-          "8A": "Tristian Novansyah, S.Kom",
-          "8B": "Admiri, S.Ag",
-          "9A": "Farhan Perdana, S.Pd",
+          "7A": "Mugi Raharjo, SE",
+          "8A": "Shinta Handayani, S.Pd",
+          "8B": "Febriantika Putri Pangesti, S.Pd",
+          "9A": "Tristian Novansyah, S.Kom",
           "9B": "Dra. Hj. Sudarti",
           "7B": "Abdul Rosyid, S.Pd.I",
-          "8C": "Shinta Handayani, S.Pd",
+          "8C": "Hj. Siti Wahyuni",
           "9C": "Fitri Khoiriyah, S.Pd.I"
         }
       },
@@ -574,58 +574,58 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "6",
         "time": "11.30 - 12.05",
         "classes": {
-          "7A": "Ida Farida, S.Pd",
-          "8A": "Admiri, S.Ag",
-          "8B": "Mugi Raharjo, SE",
-          "9A": "Farhan Perdana, S.Pd",
-          "9B": "Febriantika Putri Pangesti, S.Pd",
+          "7A": "Mugi Raharjo, SE",
+          "8A": "Shinta Handayani, S.Pd",
+          "8B": "Febriantika Putri Pangesti, S.Pd",
+          "9A": "Dra. Hj. Sudarti",
+          "9B": "Fitri Khoiriyah, S.Pd.I",
           "7B": "Abdul Rosyid, S.Pd.I",
-          "8C": "Shinta Handayani, S.Pd",
-          "9C": "Tristian Novansyah, S.Kom"
+          "8C": "Admiri, S.Ag",
+          "9C": "Ida Farida, S.Pd"
         }
       },
       {
         "period": "7",
         "time": "12.05 - 12.40",
         "classes": {
-          "7A": "Dra. Hj. Sudarti",
-          "8A": "Admiri, S.Ag",
-          "8B": "Mugi Raharjo, SE",
-          "9A": "Fitri Khoiriyah, S.Pd.I",
+          "7A": "Tristian Novansyah, S.Kom",
+          "8A": "Fitri Khoiriyah, S.Pd.I",
+          "8B": "Abdul Rosyid, S.Pd.I",
+          "9A": "Dra. Hj. Sudarti",
           "9B": "Febriantika Putri Pangesti, S.Pd",
-          "7B": "Guru B. Inggris (Cadangan)",
-          "8C": "Tristian Novansyah, S.Kom",
+          "7B": "Mugi Raharjo, SE",
+          "8C": "Admiri, S.Ag",
           "9C": "Ida Farida, S.Pd"
         }
       },
       {
         "period": "dzuhur",
         "time": "12.40 - 13.30",
-        "activity": "Sholat Dzuhur Berjamaah Kloter 2 - Murajaah - TBA - Istirahat 2"
+        "activity": "Sholat Dzuhur Berjamaah Kloter 2 - Istirahat 2"
       },
       {
         "period": "8",
         "time": "13.30 - 14.10",
         "classes": {
-          "7A": "Mugi Raharjo, SE",
-          "8A": "Abdul Rosyid, S.Pd.I",
+          "7A": "Shinta Handayani, S.Pd",
+          "8A": "Admiri, S.Ag",
           "8B": "Farhan Perdana, S.Pd",
-          "9A": "Shinta Handayani, S.Pd",
-          "9B": "Admiri, S.Ag",
-          "7B": "Guru B. Inggris (Cadangan)",
-          "8C": "Tristian Novansyah, S.Kom",
-          "9C": "Ida Farida, S.Pd"
+          "9A": "Febriantika Putri Pangesti, S.Pd",
+          "9B": "Ahmad Sulthoni Alkhoir, S.Si",
+          "7B": "Mugi Raharjo, SE",
+          "8C": "Abdul Rosyid, S.Pd.I",
+          "9C": "Tristian Novansyah, S.Kom"
         }
       },
       {
         "period": "9",
         "time": "14.10 - 14.50",
         "classes": {
-          "7A": "Mugi Raharjo, SE",
-          "8A": "Abdul Rosyid, S.Pd.I",
+          "7A": "Shinta Handayani, S.Pd",
+          "8A": "Admiri, S.Ag",
           "8B": "Farhan Perdana, S.Pd",
-          "9A": "Shinta Handayani, S.Pd",
-          "9B": "Admiri, S.Ag",
+          "9A": "Febriantika Putri Pangesti, S.Pd",
+          "9B": "Ahmad Sulthoni Alkhoir, S.Si",
           "7B": "-",
           "8C": "-",
           "9C": "-"
@@ -651,13 +651,13 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "1",
         "time": "07.00 - 07.40",
         "classes": {
-          "7A": "Admiri, S.Ag",
-          "8A": "Mugi Raharjo, SE",
-          "8B": "Dra. Hj. Sudarti",
-          "9A": "Ust. Ahmad Zen Syukrillah",
-          "9B": "Fitri Khoiriyah, S.Pd.I",
-          "7B": "Tristian Novansyah, S.Kom",
-          "8C": "Febriantika Putri Pangesti, S.Pd",
+          "7A": "Ust. Ahmad Zen Syukrillah",
+          "8A": "Tristian Novansyah, S.Kom",
+          "8B": "Ahmad Sulthoni Alkhoir, S.Si",
+          "9A": "Dra. Hj. Sudarti",
+          "9B": "Febriantika Putri Pangesti, S.Pd",
+          "7B": "Admiri, S.Ag",
+          "8C": "Fitri Khoiriyah, S.Pd.I",
           "9C": "Abdul Rosyid, S.Pd.I"
         }
       },
@@ -665,13 +665,13 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "2",
         "time": "07.40 - 08.20",
         "classes": {
-          "7A": "Admiri, S.Ag",
-          "8A": "Mugi Raharjo, SE",
-          "8B": "Fitri Khoiriyah, S.Pd.I",
-          "9A": "Ust. Ahmad Zen Syukrillah",
-          "9B": "Ida Farida, S.Pd",
-          "7B": "Tristian Novansyah, S.Kom",
-          "8C": "Febriantika Putri Pangesti, S.Pd",
+          "7A": "Ust. Ahmad Zen Syukrillah",
+          "8A": "Tristian Novansyah, S.Kom",
+          "8B": "Ahmad Sulthoni Alkhoir, S.Si",
+          "9A": "Dra. Hj. Sudarti",
+          "9B": "Febriantika Putri Pangesti, S.Pd",
+          "7B": "Admiri, S.Ag",
+          "8C": "Fitri Khoiriyah, S.Pd.I",
           "9C": "Abdul Rosyid, S.Pd.I"
         }
       },
@@ -679,34 +679,34 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "3",
         "time": "08.20 - 09.00",
         "classes": {
-          "7A": "Admiri, S.Ag",
-          "8A": "Dra. Hj. Sudarti",
+          "7A": "Ida Farida, S.Pd",
+          "8A": "Admiri, S.Ag",
           "8B": "Fitri Khoiriyah, S.Pd.I",
-          "9A": "Febriantika Putri Pangesti, S.Pd",
-          "9B": "Ida Farida, S.Pd",
-          "7B": "Guru IPA (Cadangan)",
+          "9A": "Ahmad Sulthoni Alkhoir, S.Si",
+          "9B": "Drs. H. Faisal",
+          "7B": "Febriantika Putri Pangesti, S.Pd",
           "8C": "Tristian Novansyah, S.Kom",
-          "9C": "Ahmad Sulthoni Alkhoir, S.Si"
+          "9C": "Dra. Hj. Sudarti"
         }
       },
       {
         "period": "4",
         "time": "09.00 - 09.40",
         "classes": {
-          "7A": "Abdul Rosyid, S.Pd.I",
-          "8A": "Fitri Khoiriyah, S.Pd.I",
-          "8B": "Admiri, S.Ag",
-          "9A": "Febriantika Putri Pangesti, S.Pd",
-          "9B": "Tarwoko, S.Pd",
-          "7B": "Guru IPA (Cadangan)",
-          "8C": "Drs. H. Faisal",
-          "9C": "Ahmad Sulthoni Alkhoir, S.Si"
+          "7A": "Ida Farida, S.Pd",
+          "8A": "Admiri, S.Ag",
+          "8B": "Fitri Khoiriyah, S.Pd.I",
+          "9A": "Ahmad Sulthoni Alkhoir, S.Si",
+          "9B": "Drs. H. Faisal",
+          "7B": "Febriantika Putri Pangesti, S.Pd",
+          "8C": "Abdul Rosyid, S.Pd.I",
+          "9C": "Dra. Hj. Sudarti"
         }
       },
       {
         "period": "dhuha",
         "time": "09.40 - 10.05",
-        "activity": "Sholat Dhuha"
+        "activity": "Sholat Dhuha - Murajaah - TBA"
       },
       {
         "period": "rest1",
@@ -717,72 +717,86 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "5",
         "time": "10.35 - 11.15",
         "classes": {
-          "7A": "Ida Farida, S.Pd",
-          "8A": "Dadi Rochnadi, S.Sn",
-          "8B": "Admiri, S.Ag",
+          "7A": "Admiri, S.Ag",
+          "8A": "Dra. Hj. Sudarti",
+          "8B": "Farhan Perdana, S.Pd",
           "9A": "Tristian Novansyah, S.Kom",
-          "9B": "Abdul Rosyid, S.Pd.I",
-          "7B": "Mugi Raharjo, SE",
-          "8C": "Drs. H. Faisal",
-          "9C": "Dra. Hj. Sudarti"
+          "9B": "Ida Farida, S.Pd",
+          "7B": "Ahmad Sulthoni Alkhoir, S.Si",
+          "8C": "Abdul Rosyid, S.Pd.I",
+          "9C": "Febriantika Putri Pangesti, S.Pd"
         }
       },
       {
         "period": "6",
         "time": "11.15 - 11.55",
         "classes": {
-          "7A": "Tristian Novansyah, S.Kom",
-          "8A": "Dadi Rochnadi, S.Sn",
-          "8B": "Guru IPA (Cadangan)",
+          "7A": "Abdul Rosyid, S.Pd.I",
+          "8A": "Febriantika Putri Pangesti, S.Pd",
+          "8B": "Farhan Perdana, S.Pd",
           "9A": "Admiri, S.Ag",
-          "9B": "Drs. H. Faisal",
-          "7B": "Mugi Raharjo, SE",
-          "8C": "Abdul Rosyid, S.Pd.I",
-          "9C": "Dra. Hj. Sudarti"
+          "9B": "Ida Farida, S.Pd",
+          "7B": "Ahmad Sulthoni Alkhoir, S.Si",
+          "8C": "Dadi Rochnadi, S.Sn",
+          "9C": "Drs. H. Faisal"
         }
       },
       {
         "period": "7",
         "time": "11.55 - 12.35",
         "classes": {
-          "7A": "Tristian Novansyah, S.Kom",
-          "8A": "Febriantika Putri Pangesti, S.Pd",
-          "8B": "Guru IPA (Cadangan)",
-          "9A": "Tarwoko, S.Pd",
-          "9B": "Drs. H. Faisal",
-          "7B": "Admiri, S.Ag",
-          "8C": "Abdul Rosyid, S.Pd.I",
-          "9C": "Dadi Rochnadi, S.Sn"
+          "7A": "Febriantika Putri Pangesti, S.Pd",
+          "8A": "Farhan Perdana, S.Pd",
+          "8B": "Abdul Rosyid, S.Pd.I",
+          "9A": "Admiri, S.Ag",
+          "9B": "Tristian Novansyah, S.Kom",
+          "7B": "Dra. Hj. Sudarti",
+          "8C": "Dadi Rochnadi, S.Sn",
+          "9C": "Drs. H. Faisal"
         }
       },
       {
         "period": "dzuhur",
-        "time": "12.35 - 13.30",
-        "activity": "Sholat Dzuhur Berjamaah Kloter 2 - Murajaah - TBA - Istirahat 2"
+        "time": "12.35 - 13.15",
+        "activity": "Sholat Dzuhur Berjamaah Kloter 2 - Istirahat 2"
       },
       {
         "period": "8",
-        "time": "13.30 - 14.10",
+        "time": "13.15 - 13.50",
         "classes": {
-          "7A": "Guru IPA (Cadangan)",
+          "7A": "Febriantika Putri Pangesti, S.Pd",
           "8A": "Farhan Perdana, S.Pd",
-          "8B": "Ahmad Sulthoni Alkhoir, S.Si",
+          "8B": "Abdul Rosyid, S.Pd.I",
           "9A": "Tarwoko, S.Pd",
-          "9B": "Febriantika Putri Pangesti, S.Pd",
-          "7B": "Admiri, S.Ag",
-          "8C": "Abdul Rosyid, S.Pd.I",
-          "9C": "Dadi Rochnadi, S.Sn"
+          "9B": "Tristian Novansyah, S.Kom",
+          "7B": "Dra. Hj. Sudarti",
+          "8C": "Admiri, S.Ag",
+          "9C": "Ida Farida, S.Pd"
         }
       },
       {
         "period": "9",
-        "time": "14.10 - 14.50",
+        "time": "13.50 - 14.25",
         "classes": {
-          "7A": "Guru IPA (Cadangan)",
-          "8A": "Farhan Perdana, S.Pd",
-          "8B": "Ahmad Sulthoni Alkhoir, S.Si",
-          "9A": "Tarwoko, S.Pd",
-          "9B": "Tristian Novansyah, S.Kom",
+          "7A": "Dra. Hj. Sudarti",
+          "8A": "Ahmad Sulthoni Alkhoir, S.Si",
+          "8B": "Tristian Novansyah, S.Kom",
+          "9A": "Dadi Rochnadi, S.Sn",
+          "9B": "Tarwoko, S.Pd",
+          "7B": "Abdul Rosyid, S.Pd.I",
+          "8C": "Farhan Perdana, S.Pd",
+          "9C": "Admiri, S.Ag"
+        }
+      },
+      {
+        "period": "10",
+        "time": "14.25 - 15.00",
+        "classes": {
+          "7A": "Dra. Hj. Sudarti",
+          "8A": "Ahmad Sulthoni Alkhoir, S.Si",
+          "8B": "Febriantika Putri Pangesti, S.Pd",
+          "9A": "Dadi Rochnadi, S.Sn",
+          "9B": "Tarwoko, S.Pd",
           "7B": "-",
           "8C": "-",
           "9C": "-"
@@ -808,62 +822,62 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "1",
         "time": "07.40 - 08.15",
         "classes": {
-          "7A": "Ahmad Sulthoni Alkhoir, S.Si",
-          "8A": "Ust. Ahmad Zen Syukrillah",
-          "8B": "Abdul Rosyid, S.Pd.I",
-          "9A": "Farhan Perdana, S.Pd",
-          "9B": "Febriantika Putri Pangesti, S.Pd",
-          "7B": "Rudi Darmawan, S.Sos",
-          "8C": "Fitri Khoiriyah, S.Pd.I",
-          "9C": "Ida Farida, S.Pd"
+          "7A": "Fitri Khoiriyah, S.Pd.I",
+          "8A": "Native Speaker",
+          "8B": "Native Speaker",
+          "9A": "Febriantika Putri Pangesti, S.Pd",
+          "9B": "Ust. Ahmad Zen Syukrillah",
+          "7B": "Abdul Rosyid, S.Pd.I",
+          "8C": "Rudi Darmawan, S.Sos",
+          "9C": "Ahmad Sulthoni Alkhoir, S.Si"
         }
       },
       {
         "period": "2",
         "time": "08.15 - 08.50",
         "classes": {
-          "7A": "Ahmad Sulthoni Alkhoir, S.Si",
-          "8A": "Ust. Ahmad Zen Syukrillah",
-          "8B": "Abdul Rosyid, S.Pd.I",
-          "9A": "Farhan Perdana, S.Pd",
-          "9B": "Febriantika Putri Pangesti, S.Pd",
-          "7B": "Rudi Darmawan, S.Sos",
-          "8C": "Admiri, S.Ag",
-          "9C": "Ida Farida, S.Pd"
+          "7A": "Fitri Khoiriyah, S.Pd.I",
+          "8A": "Native Speaker",
+          "8B": "Native Speaker",
+          "9A": "Febriantika Putri Pangesti, S.Pd",
+          "9B": "Ust. Ahmad Zen Syukrillah",
+          "7B": "Admiri, S.Ag",
+          "8C": "Rudi Darmawan, S.Sos",
+          "9C": "Ahmad Sulthoni Alkhoir, S.Si"
         }
       },
       {
         "period": "3",
         "time": "08.50 - 09.25",
         "classes": {
-          "7A": "Fitri Khoiriyah, S.Pd.I",
-          "8A": "Rudi Darmawan, S.Sos",
-          "8B": "Farhan Perdana, S.Pd",
-          "9A": "Admiri, S.Ag",
+          "7A": "Native Speaker",
+          "8A": "Fitri Khoiriyah, S.Pd.I",
+          "8B": "Rudi Darmawan, S.Sos",
+          "9A": "Febriantika Putri Pangesti, S.Pd",
           "9B": "Abdul Rosyid, S.Pd.I",
-          "7B": "Ida Farida, S.Pd",
+          "7B": "Admiri, S.Ag",
           "8C": "Ahmad Sulthoni Alkhoir, S.Si",
-          "9C": "Febriantika Putri Pangesti, S.Pd"
+          "9C": "Ida Farida, S.Pd"
         }
       },
       {
         "period": "4",
         "time": "09.25 - 10.00",
         "classes": {
-          "7A": "Fitri Khoiriyah, S.Pd.I",
-          "8A": "Rudi Darmawan, S.Sos",
-          "8B": "Farhan Perdana, S.Pd",
+          "7A": "Native Speaker",
+          "8A": "Fitri Khoiriyah, S.Pd.I",
+          "8B": "Rudi Darmawan, S.Sos",
           "9A": "Admiri, S.Ag",
           "9B": "Abdul Rosyid, S.Pd.I",
-          "7B": "Ida Farida, S.Pd",
+          "7B": "Febriantika Putri Pangesti, S.Pd",
           "8C": "Ahmad Sulthoni Alkhoir, S.Si",
-          "9C": "Febriantika Putri Pangesti, S.Pd"
+          "9C": "Ida Farida, S.Pd"
         }
       },
       {
         "period": "dhuha",
         "time": "10.00 - 10.25",
-        "activity": "Sholat Dhuha"
+        "activity": "Sholat Dhuha - Murajaah - TBA"
       },
       {
         "period": "rest1",
@@ -874,72 +888,86 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "5",
         "time": "10.55 - 11.30",
         "classes": {
-          "7A": "Ida Farida, S.Pd",
-          "8A": "Ahmad Sulthoni Alkhoir, S.Si",
-          "8B": "Rudi Darmawan, S.Sos",
-          "9A": "Abdul Rosyid, S.Pd.I",
-          "9B": "Admiri, S.Ag",
-          "7B": "Fitri Khoiriyah, S.Pd.I",
-          "8C": "Febriantika Putri Pangesti, S.Pd",
-          "9C": "Drs. H. Faisal"
+          "7A": "Abdul Rosyid, S.Pd.I",
+          "8A": "Rudi Darmawan, S.Sos",
+          "8B": "Febriantika Putri Pangesti, S.Pd",
+          "9A": "Native Speaker",
+          "9B": "Native Speaker",
+          "7B": "Ida Farida, S.Pd",
+          "8C": "Fitri Khoiriyah, S.Pd.I",
+          "9C": "Dadi Rochnadi, S.Sn"
         }
       },
       {
         "period": "6",
         "time": "11.30 - 12.05",
         "classes": {
-          "7A": "Ida Farida, S.Pd",
-          "8A": "Ahmad Sulthoni Alkhoir, S.Si",
-          "8B": "Rudi Darmawan, S.Sos",
-          "9A": "Dadi Rochnadi, S.Sn",
-          "9B": "Admiri, S.Ag",
+          "7A": "Admiri, S.Ag",
+          "8A": "Rudi Darmawan, S.Sos",
+          "8B": "Febriantika Putri Pangesti, S.Pd",
+          "9A": "Native Speaker",
+          "9B": "Native Speaker",
           "7B": "Fitri Khoiriyah, S.Pd.I",
-          "8C": "Febriantika Putri Pangesti, S.Pd",
-          "9C": "Drs. H. Faisal"
+          "8C": "Drs. H. Faisal",
+          "9C": "Dadi Rochnadi, S.Sn"
         }
       },
       {
         "period": "7",
         "time": "12.05 - 12.40",
         "classes": {
-          "7A": "Shinta Handayani, S.Pd",
+          "7A": "Admiri, S.Ag",
           "8A": "Febriantika Putri Pangesti, S.Pd",
-          "8B": "Fitri Khoiriyah, S.Pd.I",
-          "9A": "Dadi Rochnadi, S.Sn",
+          "8B": "Dadi Rochnadi, S.Sn",
+          "9A": "Farhan Perdana, S.Pd",
           "9B": "Ida Farida, S.Pd",
-          "7B": "Guru B. Inggris (Cadangan)",
-          "8C": "Farhan Perdana, S.Pd",
+          "7B": "Fitri Khoiriyah, S.Pd.I",
+          "8C": "Drs. H. Faisal",
           "9C": "Abdul Rosyid, S.Pd.I"
         }
       },
       {
         "period": "dzuhur",
-        "time": "12.40 - 13.30",
-        "activity": "Sholat Dzuhur Berjamaah Kloter 2 - Murajaah - TBA - Istirahat 2"
+        "time": "12.35 - 13.15",
+        "activity": "Sholat Dzuhur Berjamaah Kloter 2 - Istirahat 2"
       },
       {
         "period": "8",
-        "time": "13.30 - 14.10",
+        "time": "13.15 - 13.50",
         "classes": {
-          "7A": "Shinta Handayani, S.Pd",
+          "7A": "Ida Farida, S.Pd",
           "8A": "Admiri, S.Ag",
           "8B": "Dadi Rochnadi, S.Sn",
-          "9A": "Ahmad Sulthoni Alkhoir, S.Si",
+          "9A": "Farhan Perdana, S.Pd",
           "9B": "Tarwoko, S.Pd",
-          "7B": "Guru B. Inggris (Cadangan)",
-          "8C": "Farhan Perdana, S.Pd",
+          "7B": "Shinta Handayani, S.Pd",
+          "8C": "Febriantika Putri Pangesti, S.Pd",
           "9C": "Abdul Rosyid, S.Pd.I"
         }
       },
       {
         "period": "9",
-        "time": "14.10 - 14.50",
+        "time": "13.50 - 14.25",
         "classes": {
-          "7A": "Abdul Rosyid, S.Pd.I",
-          "8A": "Admiri, S.Ag",
-          "8B": "Dadi Rochnadi, S.Sn",
-          "9A": "Ahmad Sulthoni Alkhoir, S.Si",
-          "9B": "Tarwoko, S.Pd",
+          "7A": "Ahmad Sulthoni Alkhoir, S.Si",
+          "8A": "Farhan Perdana, S.Pd",
+          "8B": "Admiri, S.Ag",
+          "9A": "Tarwoko, S.Pd",
+          "9B": "Dadi Rochnadi, S.Sn",
+          "7B": "Shinta Handayani, S.Pd",
+          "8C": "Febriantika Putri Pangesti, S.Pd",
+          "9C": "Abdul Rosyid, S.Pd.I"
+        }
+      },
+      {
+        "period": "10",
+        "time": "14.25 - 15.00",
+        "classes": {
+          "7A": "Ahmad Sulthoni Alkhoir, S.Si",
+          "8A": "Farhan Perdana, S.Pd",
+          "8B": "Admiri, S.Ag",
+          "9A": "Tarwoko, S.Pd",
+          "9B": "Dadi Rochnadi, S.Sn",
           "7B": "-",
           "8C": "-",
           "9C": "-"
@@ -947,7 +975,7 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
       },
       {
         "period": "sore",
-        "time": "14.50 -",
+        "time": "15.00 -",
         "activity": "TBA/Murajaah - Sholat Ashar Berjamaah"
       }
     ]
@@ -965,62 +993,62 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "1",
         "time": "07.00 - 07.40",
         "classes": {
-          "7A": "Rudi Darmawan, S.Sos",
-          "8A": "Shinta Handayani, S.Pd",
-          "8B": "Tristian Novansyah, S.Kom",
+          "7A": "Mugi Raharjo, SE",
+          "8A": "Ust. Ahmad Zen Syukrillah",
+          "8B": "Shinta Handayani, S.Pd",
           "9A": "Farhan Perdana, S.Pd",
-          "9B": "Ust. Ahmad Zen Syukrillah",
-          "7B": "Ahmad Sulthoni Alkhoir, S.Si",
-          "8C": "Admiri, S.Ag",
-          "9C": "Mugi Raharjo, SE"
+          "9B": "Tristian Novansyah, S.Kom",
+          "7B": "Rudi Darmawan, S.Sos",
+          "8C": "Febriantika Putri Pangesti, S.Pd",
+          "9C": "Admiri, S.Ag"
         }
       },
       {
         "period": "2",
         "time": "07.40 - 08.20",
         "classes": {
-          "7A": "Rudi Darmawan, S.Sos",
-          "8A": "Shinta Handayani, S.Pd",
-          "8B": "Tristian Novansyah, S.Kom",
+          "7A": "Mugi Raharjo, SE",
+          "8A": "Ust. Ahmad Zen Syukrillah",
+          "8B": "Shinta Handayani, S.Pd",
           "9A": "Farhan Perdana, S.Pd",
-          "9B": "Ust. Ahmad Zen Syukrillah",
-          "7B": "Ahmad Sulthoni Alkhoir, S.Si",
-          "8C": "Admiri, S.Ag",
-          "9C": "Mugi Raharjo, SE"
+          "9B": "Abdul Rosyid, S.Pd.I",
+          "7B": "Rudi Darmawan, S.Sos",
+          "8C": "Febriantika Putri Pangesti, S.Pd",
+          "9C": "Admiri, S.Ag"
         }
       },
       {
         "period": "3",
         "time": "08.20 - 09.00",
         "classes": {
-          "7A": "Guru B. Inggris (Cadangan)",
-          "8A": "Dra. Hj. Sudarti",
-          "8B": "Farhan Perdana, S.Pd",
-          "9A": "Drs. H. Faisal",
-          "9B": "Ahmad Sulthoni Alkhoir, S.Si",
-          "7B": "Shinta Handayani, S.Pd",
-          "8C": "Rudi Darmawan, S.Sos",
-          "9C": "Admiri, S.Ag"
+          "7A": "Rudi Darmawan, S.Sos",
+          "8A": "Farhan Perdana, S.Pd",
+          "8B": "Mugi Raharjo, SE",
+          "9A": "Admiri, S.Ag",
+          "9B": "Shinta Handayani, S.Pd",
+          "7B": "Dra. Hj. Sudarti",
+          "8C": "Drs. H. Faisal",
+          "9C": "Febriantika Putri Pangesti, S.Pd"
         }
       },
       {
         "period": "4",
         "time": "09.00 - 09.40",
         "classes": {
-          "7A": "Guru B. Inggris (Cadangan)",
-          "8A": "Dra. Hj. Sudarti",
-          "8B": "Farhan Perdana, S.Pd",
-          "9A": "Drs. H. Faisal",
-          "9B": "Ahmad Sulthoni Alkhoir, S.Si",
-          "7B": "Shinta Handayani, S.Pd",
-          "8C": "Rudi Darmawan, S.Sos",
-          "9C": "Admiri, S.Ag"
+          "7A": "Rudi Darmawan, S.Sos",
+          "8A": "Farhan Perdana, S.Pd",
+          "8B": "Mugi Raharjo, SE",
+          "9A": "Admiri, S.Ag",
+          "9B": "Shinta Handayani, S.Pd",
+          "7B": "Dra. Hj. Sudarti",
+          "8C": "Drs. H. Faisal",
+          "9C": "Febriantika Putri Pangesti, S.Pd"
         }
       },
       {
         "period": "dhuha",
         "time": "09.40 - 10.05",
-        "activity": "Sholat Dhuha"
+        "activity": "Sholat Dhuha - Murajaah - TBA"
       },
       {
         "period": "rest1",
@@ -1032,13 +1060,13 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "time": "10.35 - 11.15",
         "classes": {
           "7A": "Ida Farida, S.Pd",
-          "8A": "Abdul Rosyid, S.Pd.I",
-          "8B": "Guru IPA (Cadangan)",
-          "9A": "Dra. Hj. Sudarti",
-          "9B": "Tristian Novansyah, S.Kom",
-          "7B": "Mugi Raharjo, SE",
-          "8C": "Drs. H. Faisal",
-          "9C": "Admiri, S.Ag"
+          "8A": "Febriantika Putri Pangesti, S.Pd",
+          "8B": "Admiri, S.Ag",
+          "9A": "Abdul Rosyid, S.Pd.I",
+          "9B": "Dra. Hj. Sudarti",
+          "7B": "Tristian Novansyah, S.Kom",
+          "8C": "Farhan Perdana, S.Pd",
+          "9C": "Mugi Raharjo, SE"
         }
       },
       {
@@ -1046,13 +1074,13 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "time": "11.15 - 11.55",
         "classes": {
           "7A": "Shinta Handayani, S.Pd",
-          "8A": "Farhan Perdana, S.Pd",
+          "8A": "Febriantika Putri Pangesti, S.Pd",
           "8B": "Admiri, S.Ag",
-          "9A": "Dra. Hj. Sudarti",
-          "9B": "Tristian Novansyah, S.Kom",
-          "7B": "Mugi Raharjo, SE",
-          "8C": "Drs. H. Faisal",
-          "9C": "Abdul Rosyid, S.Pd.I"
+          "9A": "Drs. H. Faisal",
+          "9B": "Dra. Hj. Sudarti",
+          "7B": "Tristian Novansyah, S.Kom",
+          "8C": "Farhan Perdana, S.Pd",
+          "9C": "Mugi Raharjo, SE"
         }
       },
       {
@@ -1060,43 +1088,43 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "time": "11.55 - 12.35",
         "classes": {
           "7A": "Shinta Handayani, S.Pd",
-          "8A": "Farhan Perdana, S.Pd",
-          "8B": "Admiri, S.Ag",
-          "9A": "Dra. Hj. Sudarti",
-          "9B": "Ida Farida, S.Pd",
-          "7B": "Abdul Rosyid, S.Pd.I",
-          "8C": "Guru B. Inggris (Cadangan)",
-          "9C": "Tristian Novansyah, S.Kom"
+          "8A": "Mugi Raharjo, SE",
+          "8B": "Tristian Novansyah, S.Kom",
+          "9A": "Drs. H. Faisal",
+          "9B": "Febriantika Putri Pangesti, S.Pd",
+          "7B": "Ida Farida, S.Pd",
+          "8C": "Abdul Rosyid, S.Pd.I",
+          "9C": "Dra. Hj. Sudarti"
         }
       },
       {
         "period": "dzuhur",
         "time": "12.35 - 13.25",
-        "activity": "Sholat Dzuhur Berjamaah Kloter 2 - Murajaah - TBA - Istirahat 2"
+        "activity": "Sholat Dzuhur Berjamaah Kloter 2 - Istirahat 2"
       },
       {
         "period": "8",
         "time": "13.25 - 14.00",
         "classes": {
-          "7A": "Guru IPA (Cadangan)",
+          "7A": "Febriantika Putri Pangesti, S.Pd",
           "8A": "Mugi Raharjo, SE",
-          "8B": "Shinta Handayani, S.Pd",
-          "9A": "Abdul Rosyid, S.Pd.I",
-          "9B": "Dra. Hj. Sudarti",
-          "7B": "Admiri, S.Ag",
-          "8C": "Guru B. Inggris (Cadangan)",
-          "9C": "Tristian Novansyah, S.Kom"
+          "8B": "Tristian Novansyah, S.Kom",
+          "9A": "Shinta Handayani, S.Pd",
+          "9B": "Admiri, S.Ag",
+          "7B": "Ida Farida, S.Pd",
+          "8C": "Abdul Rosyid, S.Pd.I",
+          "9C": "Dra. Hj. Sudarti"
         }
       },
       {
         "period": "9",
         "time": "14.00 - 14.35",
         "classes": {
-          "7A": "Guru IPA (Cadangan)",
-          "8A": "Mugi Raharjo, SE",
-          "8B": "Shinta Handayani, S.Pd",
-          "9A": "Abdul Rosyid, S.Pd.I",
-          "9B": "Dra. Hj. Sudarti",
+          "7A": "Febriantika Putri Pangesti, S.Pd",
+          "8A": "Abdul Rosyid, S.Pd.I",
+          "8B": "Dra. Hj. Sudarti",
+          "9A": "Shinta Handayani, S.Pd",
+          "9B": "Admiri, S.Ag",
           "7B": "-",
           "8C": "-",
           "9C": "-"
@@ -1122,56 +1150,56 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "1",
         "time": "07.30 - 08.05",
         "classes": {
-          "7A": "Mugi Raharjo, SE",
+          "7A": "Ida Farida, S.Pd",
           "8A": "Febriantika Putri Pangesti, S.Pd",
           "8B": "Ust. Ahmad Zen Syukrillah",
-          "9A": "Hj. Nur Azizah, S.Ag",
-          "9B": "Dra. Hj. Sudarti",
-          "7B": "Ida Farida, S.Pd",
-          "8C": "Admiri, S.Ag",
-          "9C": "Shinta Handayani, S.Pd"
+          "9A": "Tarwoko, S.Pd",
+          "9B": "Admiri, S.Ag",
+          "7B": "Mugi Raharjo, SE",
+          "8C": "Shinta Handayani, S.Pd",
+          "9C": "Hj. Nur Azizah, S.Ag"
         }
       },
       {
         "period": "2",
         "time": "08.05 - 08.40",
         "classes": {
-          "7A": "Mugi Raharjo, SE",
+          "7A": "Ida Farida, S.Pd",
           "8A": "Febriantika Putri Pangesti, S.Pd",
           "8B": "Ust. Ahmad Zen Syukrillah",
-          "9A": "Hj. Nur Azizah, S.Ag",
-          "9B": "Dra. Hj. Sudarti",
-          "7B": "Ida Farida, S.Pd",
-          "8C": "Admiri, S.Ag",
-          "9C": "Shinta Handayani, S.Pd"
+          "9A": "Dra. Hj. Sudarti",
+          "9B": "Admiri, S.Ag",
+          "7B": "Mugi Raharjo, SE",
+          "8C": "Shinta Handayani, S.Pd",
+          "9C": "Hj. Nur Azizah, S.Ag"
         }
       },
       {
         "period": "3",
         "time": "08.40 - 09.15",
         "classes": {
-          "7A": "Guru B. Inggris (Cadangan)",
-          "8A": "Tristian Novansyah, S.Kom",
-          "8B": "Mugi Raharjo, SE",
-          "9A": "Admiri, S.Ag",
-          "9B": "Hj. Nur Azizah, S.Ag",
-          "7B": "Guru IPA (Cadangan)",
+          "7A": "Tristian Novansyah, S.Kom",
+          "8A": "Mugi Raharjo, SE",
+          "8B": "Hj. Siti Wahyuni",
+          "9A": "Hj. Nur Azizah, S.Ag",
+          "9B": "Febriantika Putri Pangesti, S.Pd",
+          "7B": "Ida Farida, S.Pd",
           "8C": "Farhan Perdana, S.Pd",
-          "9C": "Febriantika Putri Pangesti, S.Pd"
+          "9C": "Admiri, S.Ag"
         }
       },
       {
         "period": "4",
         "time": "09.15 - 09.50",
         "classes": {
-          "7A": "Guru B. Inggris (Cadangan)",
-          "8A": "Tristian Novansyah, S.Kom",
-          "8B": "Mugi Raharjo, SE",
-          "9A": "Admiri, S.Ag",
-          "9B": "Hj. Nur Azizah, S.Ag",
-          "7B": "Guru IPA (Cadangan)",
+          "7A": "Tristian Novansyah, S.Kom",
+          "8A": "Mugi Raharjo, SE",
+          "8B": "Hj. Siti Wahyuni",
+          "9A": "Hj. Nur Azizah, S.Ag",
+          "9B": "Febriantika Putri Pangesti, S.Pd",
+          "7B": "Ida Farida, S.Pd",
           "8C": "Farhan Perdana, S.Pd",
-          "9C": "Febriantika Putri Pangesti, S.Pd"
+          "9C": "Admiri, S.Ag"
         }
       },
       {
@@ -1183,28 +1211,28 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "5",
         "time": "10.20 - 10.55",
         "classes": {
-          "7A": "Guru IPA (Cadangan)",
-          "8A": "Admiri, S.Ag",
-          "8B": "Hj. Siti Wahyuni",
-          "9A": "Dra. Hj. Sudarti",
-          "9B": "Febriantika Putri Pangesti, S.Pd",
-          "7B": "Abdul Rosyid, S.Pd.I",
-          "8C": "Dadi Rochnadi, S.Sn",
-          "9C": "Hj. Nur Azizah, S.Ag"
+          "7A": "Febriantika Putri Pangesti, S.Pd",
+          "8A": "Dra. Hj. Sudarti",
+          "8B": "Mugi Raharjo, SE",
+          "9A": "Farhan Perdana, S.Pd",
+          "9B": "Hj. Nur Azizah, S.Ag",
+          "7B": "Admiri, S.Ag",
+          "8C": "Hj. Siti Wahyuni",
+          "9C": "Tristian Novansyah, S.Kom"
         }
       },
       {
         "period": "6",
         "time": "10.55 - 11.30",
         "classes": {
-          "7A": "Guru IPA (Cadangan)",
-          "8A": "Farhan Perdana, S.Pd",
-          "8B": "Hj. Siti Wahyuni",
-          "9A": "Dra. Hj. Sudarti",
-          "9B": "Tarwoko, S.Pd",
+          "7A": "Febriantika Putri Pangesti, S.Pd",
+          "8A": "Dra. Hj. Sudarti",
+          "8B": "Mugi Raharjo, SE",
+          "9A": "Farhan Perdana, S.Pd",
+          "9B": "Hj. Nur Azizah, S.Ag",
           "7B": "Sholahuddin, S.Pd",
-          "8C": "Dadi Rochnadi, S.Sn",
-          "9C": "Hj. Nur Azizah, S.Ag"
+          "8C": "Hj. Siti Wahyuni",
+          "9C": "Tristian Novansyah, S.Kom"
         }
       },
       {
@@ -1216,14 +1244,14 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "period": "7",
         "time": "12.50 - 13.30",
         "classes": {
-          "7A": "Tristian Novansyah, S.Kom",
-          "8A": "Farhan Perdana, S.Pd",
-          "8B": "Guru IPA (Cadangan)",
-          "9A": "Tarwoko, S.Pd",
-          "9B": "Dadi Rochnadi, S.Sn",
+          "7A": "Dra. Hj. Sudarti",
+          "8A": "Dadi Rochnadi, S.Sn",
+          "8B": "Farhan Perdana, S.Pd",
+          "9A": "Abdul Rosyid, S.Pd.I",
+          "9B": "Tarwoko, S.Pd",
           "7B": "Sholahuddin, S.Pd",
-          "8C": "Guru B. Inggris (Cadangan)",
-          "9C": "Admiri, S.Ag"
+          "8C": "Admiri, S.Ag",
+          "9C": "Febriantika Putri Pangesti, S.Pd"
         }
       },
       {
@@ -1231,13 +1259,13 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "time": "13.30 - 14.10",
         "classes": {
           "7A": "Sholahuddin, S.Pd",
-          "8A": "Dra. Hj. Sudarti",
-          "8B": "Guru IPA (Cadangan)",
-          "9A": "Febriantika Putri Pangesti, S.Pd",
-          "9B": "Dadi Rochnadi, S.Sn",
+          "8A": "Dadi Rochnadi, S.Sn",
+          "8B": "Farhan Perdana, S.Pd",
+          "9A": "Abdul Rosyid, S.Pd.I",
+          "9B": "Dra. Hj. Sudarti",
           "7B": "Tristian Novansyah, S.Kom",
-          "8C": "Guru B. Inggris (Cadangan)",
-          "9C": "Admiri, S.Ag"
+          "8C": "Admiri, S.Ag",
+          "9C": "Febriantika Putri Pangesti, S.Pd"
         }
       },
       {
@@ -1245,10 +1273,10 @@ export const INITIAL_TEACHING_SCHEDULE: TeachingScheduleDay[] = [
         "time": "14.10 - 14.50",
         "classes": {
           "7A": "Sholahuddin, S.Pd",
-          "8A": "Dra. Hj. Sudarti",
-          "8B": "Guru IPA (Cadangan)",
+          "8A": "Tristian Novansyah, S.Kom",
+          "8B": "Admiri, S.Ag",
           "9A": "Febriantika Putri Pangesti, S.Pd",
-          "9B": "Admiri, S.Ag",
+          "9B": "Dra. Hj. Sudarti",
           "7B": "-",
           "8C": "-",
           "9C": "-"
