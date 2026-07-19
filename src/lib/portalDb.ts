@@ -954,6 +954,30 @@ export const deleteCollectionItem = async (
   return data as unknown[];
 };
 
+// Menyusun ulang urutan seluruh item di sebuah koleksi (dipakai untuk
+// drag-drop reorder, mis. Dokumentasi Galeri) — atomik di server lewat
+// reorder_collection, bukan mengirim ulang seluruh array dari salinan
+// browser (sama alasannya dengan append/update/deleteCollectionItem di atas).
+export const reorderCollection = async (
+  key: PortalCollectionKey,
+  orderedIds: string[]
+): Promise<unknown[] | null> => {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const { data, error } = await supabase.rpc('reorder_collection', {
+    p_key: key,
+    p_ordered_ids: orderedIds,
+  });
+
+  if (error) {
+    console.error(`[portalDb] Gagal menyusun ulang urutan ${key}:`, error.message);
+    return null;
+  }
+
+  return data as unknown[];
+};
+
 export const flushPendingSaves = async (): Promise<void> => {
   const entries = Array.from(pendingPayloads.entries());
   for (const [key, timer] of pendingTimers.entries()) {
