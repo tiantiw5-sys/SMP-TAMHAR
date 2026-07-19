@@ -169,17 +169,30 @@ export default function App() {
   const [loginFormError, setLoginFormError] = useState<string | null>(null);
   const [loginLockedSeconds, setLoginLockedSeconds] = useState(0);
 
+  // Cek status lockout ke server (debounced) tiap ID login berubah — bukan
+  // tiap keystroke. Pengecekan yang benar-benar menentukan tetap terjadi
+  // lagi (tanpa debounce) tepat sebelum submit di handleAuthSubmit/
+  // handleMuridGateAuthSubmit.
   useEffect(() => {
-    setLoginLockedSeconds(getLockoutRemainingSeconds(loginEmail));
+    if (!loginEmail.trim()) {
+      setLoginLockedSeconds(0);
+      return;
+    }
+    const timeout = setTimeout(() => {
+      getLockoutRemainingSeconds(loginEmail).then(setLoginLockedSeconds);
+    }, 400);
+    return () => clearTimeout(timeout);
   }, [loginEmail]);
 
+  // Setelah tahu sisa detik terkunci dari server, hitung mundur di client
+  // saja (tidak perlu RPC baru tiap detik).
   useEffect(() => {
     if (loginLockedSeconds <= 0) return;
     const timer = setInterval(() => {
-      setLoginLockedSeconds(getLockoutRemainingSeconds(loginEmail));
+      setLoginLockedSeconds((s) => Math.max(0, s - 1));
     }, 1000);
     return () => clearInterval(timer);
-  }, [loginLockedSeconds, loginEmail]);
+  }, [loginLockedSeconds > 0]);
 
   // PPDB Interest Form states
   const [ppdbStudentName, setPpdbStudentName] = useState('');
@@ -781,7 +794,7 @@ export default function App() {
     e.preventDefault();
     setLoginFormError(null);
 
-    const stillLocked = getLockoutRemainingSeconds(loginEmail);
+    const stillLocked = await getLockoutRemainingSeconds(loginEmail);
     if (stillLocked > 0) {
       setLoginLockedSeconds(stillLocked);
       return;
@@ -795,7 +808,7 @@ export default function App() {
 
     const signedIn = await signInStaff(supabase, loginEmail, loginPassword);
     if ('error' in signedIn) {
-      const justLockedFor = recordFailedAttempt(loginEmail);
+      const justLockedFor = await recordFailedAttempt(loginEmail);
       if (justLockedFor > 0) {
         setLoginLockedSeconds(justLockedFor);
         setLoginFormError(`Terlalu banyak percobaan gagal. Coba lagi dalam ${formatLockoutCountdown(justLockedFor)}.`);
@@ -812,7 +825,19 @@ export default function App() {
       return;
     }
 
-    clearLockout(loginEmail);
+    // Akun Siswa cuma untuk Star-Learning (LMS) — portal ERP ini tidak
+    // pernah didesain untuk role Siswa (lihat StudentDashboard yang dipakai
+    // di sini itu untuk pengurus OSIS/"Normal User", bukan siswa LMS).
+    // Tanpa blokir ini, siapa pun dengan akun Siswa LMS bisa ikut login ke
+    // portal sekolah lewat jalur staf ini karena keduanya berbagi DB Auth
+    // yang sama.
+    if (profile.role === 'Siswa') {
+      setLoginFormError('Akun Siswa tidak bisa login di portal ini. Silakan gunakan Star-Learning (LMS).');
+      await supabase.auth.signOut();
+      return;
+    }
+
+    await clearLockout(loginEmail);
 
     if (profile.mustChangePassword) {
       setPasswordChangeUser(profile);
@@ -828,7 +853,7 @@ export default function App() {
     e.preventDefault();
     setMuridGateError(null);
 
-    const stillLocked = getLockoutRemainingSeconds(loginEmail);
+    const stillLocked = await getLockoutRemainingSeconds(loginEmail);
     if (stillLocked > 0) {
       setLoginLockedSeconds(stillLocked);
       setMuridGateError(`Terlalu banyak percobaan gagal. Coba lagi dalam ${formatLockoutCountdown(stillLocked)}.`);
@@ -843,7 +868,7 @@ export default function App() {
 
     const signedIn = await signInStaff(supabase, loginEmail, loginPassword);
     if ('error' in signedIn) {
-      const justLockedFor = recordFailedAttempt(loginEmail);
+      const justLockedFor = await recordFailedAttempt(loginEmail);
       if (justLockedFor > 0) {
         setLoginLockedSeconds(justLockedFor);
         setMuridGateError(`Terlalu banyak percobaan gagal. Coba lagi dalam ${formatLockoutCountdown(justLockedFor)}.`);
@@ -866,7 +891,7 @@ export default function App() {
       return;
     }
 
-    clearLockout(loginEmail);
+    await clearLockout(loginEmail);
 
     if (profile.mustChangePassword) {
       setPasswordChangeUser(profile);

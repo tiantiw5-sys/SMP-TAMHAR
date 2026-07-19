@@ -7,7 +7,10 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'Super Admin' | 'Managerial OSIS' | 'Managerial Sekolah' | 'Guru Piket' | 'Guru' | 'Normal User' | 'Orang Tua';
+  // 'Siswa' cuma dipakai untuk mendeteksi & menolak login akun LMS di
+  // portal ini (lihat App.tsx handleAuthSubmit) — role itu sendiri tidak
+  // pernah dimaksudkan untuk benar-benar masuk & memakai portal ERP.
+  role: 'Super Admin' | 'Managerial OSIS' | 'Managerial Sekolah' | 'Guru Piket' | 'Guru' | 'Normal User' | 'Orang Tua' | 'Siswa';
   status: 'Active' | 'Inactive';
   lastActive?: string;
   mustChangePassword?: boolean;

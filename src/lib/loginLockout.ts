@@ -1,57 +1,38 @@
-const FAIL_THRESHOLD = 3;
-const LOCKOUT_DURATIONS_SEC = [30, 60, 120, 300, 600] as const;
+import { getSupabase } from './supabase';
 
-interface LockoutRecord {
-  failCount: number;
-  lockoutLevel: number;
-  lockedUntil: number;
+/** Sisa detik terkunci untuk `loginId` ini, ditanya ke server (tabel
+ * `login_lockouts`, satu tabel yang sama dipakai juga oleh LMS — lihat
+ * supabase/migrate_server_login_lockout.sql) — BUKAN localStorage, supaya
+ * tidak bisa dilewati dengan clear storage / ganti browser / incognito.
+ * Fail-open: kalau RPC error (mis. migrasi belum dijalankan di DB atau
+ * Supabase belum terhubung), anggap tidak terkunci — jangan sampai bug
+ * infra mengunci semua orang keluar dari portal. */
+export async function getLockoutRemainingSeconds(loginId: string): Promise<number> {
+  const id = loginId.trim();
+  const supabase = getSupabase();
+  if (!id || !supabase) return 0;
+  const { data, error } = await supabase.rpc('check_login_lockout', { p_login_id: id });
+  if (error || typeof data !== 'number') return 0;
+  return data;
 }
 
-function storageKey(loginId: string): string {
-  return `smptamhar_login_lockout_${loginId.trim().toLowerCase()}`;
+/** Catat satu percobaan login gagal di server. Mengembalikan durasi kunci
+ * baru dalam detik kalau percobaan ini yang memicu lockout, atau 0 kalau
+ * belum. */
+export async function recordFailedAttempt(loginId: string): Promise<number> {
+  const id = loginId.trim();
+  const supabase = getSupabase();
+  if (!id || !supabase) return 0;
+  const { data, error } = await supabase.rpc('record_login_failure', { p_login_id: id });
+  if (error || typeof data !== 'number') return 0;
+  return data;
 }
 
-function readRecord(loginId: string): LockoutRecord {
-  try {
-    const raw = localStorage.getItem(storageKey(loginId));
-    if (!raw) return { failCount: 0, lockoutLevel: 0, lockedUntil: 0 };
-    return JSON.parse(raw) as LockoutRecord;
-  } catch {
-    return { failCount: 0, lockoutLevel: 0, lockedUntil: 0 };
-  }
-}
-
-function writeRecord(loginId: string, record: LockoutRecord): void {
-  localStorage.setItem(storageKey(loginId), JSON.stringify(record));
-}
-
-export function getLockoutRemainingSeconds(loginId: string): number {
-  if (!loginId.trim()) return 0;
-  const remaining = Math.ceil((readRecord(loginId).lockedUntil - Date.now()) / 1000);
-  return remaining > 0 ? remaining : 0;
-}
-
-/** Catat satu percobaan login gagal. Mengembalikan durasi kunci baru dalam
- * detik kalau percobaan ini yang memicu lockout, atau 0 kalau belum. */
-export function recordFailedAttempt(loginId: string): number {
-  const record = readRecord(loginId);
-  record.failCount += 1;
-
-  let lockedSeconds = 0;
-  if (record.failCount >= FAIL_THRESHOLD) {
-    const duration = LOCKOUT_DURATIONS_SEC[Math.min(record.lockoutLevel, LOCKOUT_DURATIONS_SEC.length - 1)];
-    record.lockedUntil = Date.now() + duration * 1000;
-    record.lockoutLevel += 1;
-    record.failCount = 0;
-    lockedSeconds = duration;
-  }
-
-  writeRecord(loginId, record);
-  return lockedSeconds;
-}
-
-export function clearLockout(loginId: string): void {
-  localStorage.removeItem(storageKey(loginId));
+export async function clearLockout(loginId: string): Promise<void> {
+  const id = loginId.trim();
+  const supabase = getSupabase();
+  if (!id || !supabase) return;
+  await supabase.rpc('clear_login_lockout', { p_login_id: id });
 }
 
 export function formatLockoutCountdown(seconds: number): string {
