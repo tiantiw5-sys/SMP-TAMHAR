@@ -1835,7 +1835,7 @@ export default function App() {
                           required
                           value={loginEmail}
                           onChange={(e) => setLoginEmail(e.target.value)}
-                          placeholder="e.g. bendahara.osis atau superadmin"
+                          placeholder=""
                           className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-amber-400 font-medium text-white"
                         />
                       </div>
