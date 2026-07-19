@@ -112,8 +112,10 @@ Lalu reload Kong (`docker restart supabase-kong`, cek dulu apakah declarative re
 ## 6. Kredensial
 
 - Supabase URL: `https://db.smptamhar.com`
-- `service_role` key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaXNzIjoic3VwYWJhc2UiLCJpYXQiOjE3ODQxMzA4NDksImV4cCI6MTk0MTgxMDg0OX0.AORU2e5Ugzgs7KBrYsWQ8W1jbSIXecXIanc3VHqWv7g` — **JANGAN pernah commit ke git, jangan taruh di kode frontend manapun.** Hanya untuk request server-side/manual seperti di atas.
-- VPS SSH: host `43.157.198.190`, user `ubuntu`. Password **sering di-reset owner** — terakhir diketahui `J6i-rf2-ogD-TtE` tapi kemungkinan besar sudah tidak berlaku lagi. Kalau gagal login: **JANGAN coba tebak/brute-force sendiri** — minta password terbaru langsung ke Tristian (owner).
+- `service_role` key: **REDACTED** — minta ke owner / baca dari vault lokal (`.env` / password manager). **JANGAN** commit key ke git, **JANGAN** taruh di frontend. Hanya untuk request server-side/manual.
+- VPS SSH: host `43.157.198.190`, user `ubuntu`. Password: **REDACTED** — minta ke owner. **JANGAN** tebak/brute-force; **JANGAN** commit password ke git.
+
+> **Insiden 2026-07-20:** versi lama file ini sempat memuat service_role JWT + password SSH secara eksplisit dan ter-push ke GitHub publik. Sudah di-redact di commit ini. Owner disarankan **rotasi password SSH** (cepat) dan mempertimbangkan **rotasi JWT/service_role** (lebih rumit — lihat `HANDOFF_REMAINING_ITEMS.md` C1/C2).
 
 ## 7. TUGAS 4 (terakhir): Commit perubahan kode
 
