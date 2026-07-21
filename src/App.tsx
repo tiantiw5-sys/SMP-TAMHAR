@@ -589,7 +589,10 @@ export default function App() {
 
     let cancelled = false;
 
-    const applySession = async (sessionUser: { id: string; email?: string | null } | null) => {
+    const applySession = async (
+      sessionUser: { id: string; email?: string | null } | null,
+      options?: { logIfRestored?: boolean }
+    ) => {
       if (!sessionUser) {
         if (!cancelled) {
           setIsLoggedIn(false);
@@ -599,12 +602,31 @@ export default function App() {
       }
       const profile = await fetchProfile(sessionUser);
       if (cancelled) return;
+
+      // Akun Siswa tidak boleh masuk ke portal ERP ini — handleAuthSubmit
+      // sudah menolaknya saat login manual, tapi sesi yang di-restore diam-diam
+      // dari localStorage (buka tab baru/refresh) tidak lewat situ, jadi
+      // ceknya diulang di sini juga.
+      if (profile?.role === 'Siswa') {
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+        await supabase.auth.signOut();
+        return;
+      }
+
       setIsLoggedIn(Boolean(profile));
       setCurrentUser(profile);
+
+      // Sesi yang di-restore diam-diam (tab dibuka lagi / refresh, token masih
+      // valid) sebelumnya tidak pernah tercatat "Login" di Log Aktivitas —
+      // cuma Logout-nya yang kecatat, jadi kelihatan asimetris/tidak lengkap.
+      if (profile && options?.logIfRestored) {
+        addActivityLog(profile.name, profile.role, 'Login', 'Sesi dilanjutkan otomatis (token login masih tersimpan di browser).');
+      }
     };
 
     supabase.auth.getSession().then(({ data }) => {
-      void applySession(data.session?.user ?? null).then(() => {
+      void applySession(data.session?.user ?? null, { logIfRestored: true }).then(() => {
         if (!cancelled) setIsAuthLoading(false);
       });
     });
