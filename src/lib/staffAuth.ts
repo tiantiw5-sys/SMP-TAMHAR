@@ -11,6 +11,14 @@ export async function signInStaff(
   loginId: string,
   password: string
 ): Promise<{ user: AuthUser; session: Session; email: string } | { error: string }> {
+  const trimmed = loginId.trim();
+  // Supabase auth cocokin email tanpa peduli besar/kecil huruf, tapi ID
+  // login kita mau ketat: huruf besar di ID harus ditolak, bukan cuma
+  // diam-diam dianggap sama seperti huruf kecil.
+  if (trimmed !== trimmed.toLowerCase()) {
+    return { error: 'ID atau password salah.' };
+  }
+
   const emails = staffLoginEmails(loginId);
   let lastError = 'ID atau password salah.';
 

@@ -11,7 +11,7 @@ import {
   Sparkles, Filter, X, ArrowUpRight, Search, Menu,
   Globe, MapPin, Activity, Wifi, Clock, Link2, RefreshCw,
   LayoutDashboard as LayoutDashboardIcon, ChevronUp, ChevronDown,
-  Printer, ScanLine, ExternalLink, GripVertical
+  Printer, ScanLine, ExternalLink, GripVertical, HelpCircle
 } from 'lucide-react';
 import {
   Article, GalleryItem, Teacher, Uniform, CashTransaction,
@@ -382,6 +382,9 @@ export default function StudentDashboard({
   const [studentImportBusy, setStudentImportBusy] = useState(false);
   const [studentClassFilter, setStudentClassFilter] = useState('all');
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [teacherSearchQuery, setTeacherSearchQuery] = useState('');
+  const [logSearchQuery, setLogSearchQuery] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<Set<string>>(new Set());
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState<{ isOpen: boolean; mode: 'selected' | 'class' | null }>({
     isOpen: false,
@@ -969,6 +972,32 @@ export default function StudentDashboard({
       .filter((s) => !q || s.name.toLowerCase().includes(q) || s.nis.toLowerCase().includes(q) || s.nisn.toLowerCase().includes(q))
       .sort((a, b) => a.className.localeCompare(b.className) || a.name.localeCompare(b.name, 'id'));
   }, [students, studentClassFilter, studentSearchQuery]);
+
+  const filteredProfiles = useMemo(() => {
+    const q = userSearchQuery.trim().toLowerCase();
+    if (!q) return profiles;
+    return profiles.filter((u) =>
+      u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)
+    );
+  }, [profiles, userSearchQuery]);
+
+  const filteredTeachers = useMemo(() => {
+    const q = teacherSearchQuery.trim().toLowerCase();
+    const sorted = [...teachers].sort((a, b) => (a.code ?? Infinity) - (b.code ?? Infinity));
+    if (!q) return sorted;
+    return sorted.filter((t) =>
+      t.name.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q) || t.position.toLowerCase().includes(q)
+    );
+  }, [teachers, teacherSearchQuery]);
+
+  const filteredLogs = useMemo(() => {
+    const q = logSearchQuery.trim().toLowerCase();
+    if (!q) return logs;
+    return logs.filter((log) =>
+      log.user.toLowerCase().includes(q) || log.role.toLowerCase().includes(q) ||
+      log.action.toLowerCase().includes(q) || log.details.toLowerCase().includes(q)
+    );
+  }, [logs, logSearchQuery]);
 
   // Muat daftar profil pengguna ERP langsung dari Supabase (bukan lagi lewat
   // portalDb — RLS di tabel profiles butuh baris SQL asli, bukan blob JSON).
@@ -2425,6 +2454,20 @@ export default function StudentDashboard({
               </a>
             )}
 
+            {/* Generator Soal (tool eksternal untuk guru — disembunyikan dari Manajerial OSIS) */}
+            {!isManagerialOsis && (
+              <a
+                href="https://soalcerdas.ai.studio"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm lg:text-xs font-bold transition-all cursor-pointer text-slate-400 hover:bg-slate-900 hover:text-white"
+              >
+                <HelpCircle className="w-4 h-4 shrink-0" />
+                <span className="flex-grow">Generator Soal</span>
+                <ArrowUpRight className="w-3.5 h-3.5 shrink-0 opacity-60" />
+              </a>
+            )}
+
             <div className="pt-4 border-t border-slate-800 mt-4 space-y-3 px-2">
               <button
                 onClick={onLogout}
@@ -3196,10 +3239,24 @@ export default function StudentDashboard({
                   </div>
                 )}
 
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    value={teacherSearchQuery}
+                    onChange={(e) => setTeacherSearchQuery(e.target.value)}
+                    placeholder="Cari nama / mapel / jabatan..."
+                    className="w-full bg-[#0b1d33] border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                {teachers.length > 0 && filteredTeachers.length === 0 && (
+                  <p className="text-xs text-slate-500 text-center py-6">Tidak ada guru yang cocok dengan pencarian.</p>
+                )}
+
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                  {[...teachers]
-                    .sort((a, b) => (a.code ?? Infinity) - (b.code ?? Infinity))
-                    .map((t) => (
+                  {filteredTeachers.map((t) => (
                     <div key={t.id} className="bg-[#0b1d33] border border-slate-800 p-4 rounded-xl text-center space-y-2 relative">
                       {t.code && (
                         <span className="absolute top-2 right-2 bg-slate-900 border border-slate-700 text-amber-400 text-[9px] font-black px-1.5 py-0.5 rounded-md font-mono">
@@ -4129,6 +4186,18 @@ export default function StudentDashboard({
                   </button>
                 </div>
 
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    value={logSearchQuery}
+                    onChange={(e) => setLogSearchQuery(e.target.value)}
+                    placeholder="Cari pengguna / peran / aksi / keterangan..."
+                    className="w-full bg-[#0b1d33] border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
                 <div className="bg-[#0b1d33] border border-slate-800 rounded-2xl overflow-hidden text-left">
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs text-slate-300">
@@ -4142,7 +4211,7 @@ export default function StudentDashboard({
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800/80 font-mono text-[11px]">
-                        {logs.map((log) => (
+                        {filteredLogs.map((log) => (
                           <tr key={log.id} className="hover:bg-slate-900/30">
                             <td className="p-4 text-slate-500 whitespace-nowrap">{log.timestamp}</td>
                             <td className="p-4 font-bold text-white">{log.user}</td>
@@ -4161,6 +4230,13 @@ export default function StudentDashboard({
                             <td className="p-4 text-slate-300 font-sans">{log.details}</td>
                           </tr>
                         ))}
+                        {logs.length > 0 && filteredLogs.length === 0 && (
+                          <tr>
+                            <td colSpan={5} className="p-8 text-center text-slate-500 font-sans">
+                              Tidak ada log yang cocok dengan pencarian.
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -4192,6 +4268,18 @@ export default function StudentDashboard({
                   </button>
                 </div>
 
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                    placeholder="Cari nama / email / peran..."
+                    className="w-full bg-[#0b1d33] border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
                 <div className="bg-[#0b1d33] border border-slate-800 rounded-2xl overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs text-slate-300 text-left">
@@ -4206,7 +4294,7 @@ export default function StudentDashboard({
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800">
-                        {profiles.map((u) => (
+                        {filteredProfiles.map((u) => (
                           <tr key={u.id} className="hover:bg-slate-900/20">
                             <td className="p-4 font-bold text-white">{u.name}</td>
                             <td className="p-4 font-mono">{u.email}</td>
@@ -4238,6 +4326,13 @@ export default function StudentDashboard({
                           <tr>
                             <td colSpan={6} className="p-8 text-center text-slate-500">
                               Belum ada akun. Klik "Tambah Akun" untuk membuat yang pertama.
+                            </td>
+                          </tr>
+                        )}
+                        {profiles.length > 0 && filteredProfiles.length === 0 && (
+                          <tr>
+                            <td colSpan={6} className="p-8 text-center text-slate-500">
+                              Tidak ada akun yang cocok dengan pencarian.
                             </td>
                           </tr>
                         )}
